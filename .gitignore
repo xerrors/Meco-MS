@@ -1,0 +1,30 @@
+# Logs
+logs
+node_modules
+package-lock.json
+yarn.lock
+
+.vscode
+.temp
+.cache
+.DS_Store
+
+# flask
+__pycache__
+instance
+.env
+
+.idea
+
+# 数据文件
+*.db
+*.log
+
+dist
+
+/blog/blog/*
+dist-ssr
+*.local
+
+# ssl 认证文件
+server/cert
