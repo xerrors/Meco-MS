@@ -25,3 +25,4 @@ npm install --global yarn
 ## TODO
 
 - 编辑完文章之后切换到其他页面需要判断是否要保存
+- build 之后无法跨域的问题
