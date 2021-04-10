@@ -2,11 +2,18 @@
   <div class="edit">
     <div class="navbar">
       <h1>编辑文章</h1>
-      <a-button class="nav-btn" @click="myEditor.upload">发布</a-button>
+      <a-button
+        class="nav-btn"
+        @click="myEditor.upload"
+        :loading="buttonStatus!='发布'"
+        >{{ buttonStatus }}</a-button
+      >
     </div>
+    <!-- config: https://code-farmer-i.github.io/vue-markdown-editor/zh/ -->
     <v-md-editor
       v-model="myEditor.text"
       :disabled-menus="[]"
+      mode="edit"
       right-toolbar="preview toc sync-scroll fullscreen"
       @upload-image="handleUploadImage"
       @save="handleSave"
@@ -16,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, onMounted } from "vue";
+import { defineComponent, reactive, onMounted, ref } from "vue";
 import request from "../utils/request";
 import { parseTime } from "../utils/format";
 import { message } from "ant-design-vue";
@@ -35,13 +42,20 @@ export default defineComponent({
     let route = useRoute();
     let router = useRouter();
 
+    const buttonStatus = ref("发布")
+
+    // myEditer 对象
     let myEditor = reactive({
       text: oriText,
+
       resetContent: () => {
         myEditor.text = oriText;
       },
+
       upload: () => {
+        buttonStatus.value = "上传中"
         console.log(myEditor.text);
+        // 保存源文件
         new Promise((resolve, reject): void => {
           request({
             url: "/api/admin/articles/md_source",
@@ -56,6 +70,22 @@ export default defineComponent({
           })
             .then((res) => {
               message.success(res.data.message);
+              buttonStatus.value = "编译中"
+              resolve(res);
+            })
+            .catch((err) => {
+              reject(err);
+            });
+        });
+        // 编译 vuepress
+        new Promise((resolve, reject): void => {
+          request({
+            url: "/api/admin/deploy-vuepress",
+            method: "get",
+          })
+            .then((res) => {
+              message.success(res.data.message);
+              buttonStatus.value = "发布"
               resolve(res);
             })
             .catch((err) => {
@@ -77,12 +107,16 @@ export default defineComponent({
     });
 
     onMounted(() => {
+      // 向服务器获取数据
       console.log(route.params.path);
+
+      const key: string = "load_data";
       if (route.params.path == "draft") {
         if (localStorage.getItem("draft")) {
-          myEditor.text = localStorage.getItem("draft");
+          myEditor.text = localStorage.getItem("draft") || "";
         }
       } else {
+        message.loading({ content: "正在向服务器获取数据……", key });
         new Promise((resolve, reject): void => {
           request({
             url: "/api/admin/articles/md_source",
@@ -93,10 +127,11 @@ export default defineComponent({
           })
             .then((res) => {
               myEditor.text = res.data.data;
+              message.success({ content: "加载成功~", key });
               resolve(res);
             })
             .catch((err) => {
-              message.error("所访问的资源不存在");
+              message.error({ content: "所访问的资源不存在", key });
               router.push("/edit/draft");
               reject(err);
             });
@@ -107,6 +142,7 @@ export default defineComponent({
     return {
       myEditor,
       toolbar,
+      buttonStatus,
     };
   },
   methods: {
@@ -132,6 +168,7 @@ export default defineComponent({
 
 <style lang="scss">
 .v-md-editor {
+  box-shadow: none;
   min-height: calc(100vh - var(--navbar-height) - var(--footer-height));
 }
 </style>

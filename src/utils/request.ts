@@ -2,7 +2,7 @@ import { message } from 'ant-design-vue'
 import axios from 'axios'
 import Cookies from 'js-cookie'
 
-axios.defaults.timeout = 50000 // 请求超时时间
+axios.defaults.timeout = 600000 // 请求超时时间 10min
 
 // 请求拦截器
 axios.interceptors.request.use(
