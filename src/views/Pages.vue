@@ -129,7 +129,7 @@ export default defineComponent({
                     "https://editor.csdn.net/md/?articleId=" + item.article_id;
                 } else if (source == "db") {
                   item.link = joinPath(
-                    "https://www.xerrors.fun/",
+                    "http://xerrors.fun/",
                     item.permalink
                   );
                 }
