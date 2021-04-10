@@ -23,7 +23,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://116.62.110.131:5000/',
+        target: 'https://xerrors.fun:5000/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '')
       }
