@@ -113,7 +113,7 @@ export default defineComponent({
         data.source = source;
         new Promise((resolve, reject): void => {
           request({
-            url: "/api/admin/articles",
+            url: "/admin/articles",
             method: "get",
             params: { source: source },
           })

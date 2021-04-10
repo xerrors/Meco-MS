@@ -4,6 +4,8 @@ import Cookies from 'js-cookie'
 
 axios.defaults.timeout = 600000 // 请求超时时间 10min
 
+axios.defaults.baseURL = (process.env.NODE_ENV === 'development') ? '/api' : ''
+
 // 请求拦截器
 axios.interceptors.request.use(
   config => {

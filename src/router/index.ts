@@ -74,7 +74,7 @@ router.beforeEach((to, from, next) => {
   else {
     new Promise((resolve, reject): void => {
       request({
-        url: '/api/admin/login',
+        url: '/admin/login',
         method: 'post',
       })
       .then(res => {

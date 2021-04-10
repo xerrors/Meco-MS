@@ -31,7 +31,7 @@ export default defineComponent({
         formdata.loading = true;
         new Promise((resolve, reject): void => {
           request({
-            url: '/api/admin/login',
+            url: '/admin/login',
             method: 'post',
             data: {
               username: formdata.username,
