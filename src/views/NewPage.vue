@@ -2,7 +2,7 @@
   <div class="edit">
     <div class="navbar">
       <h1>编辑文章</h1>
-      <a-button class="nav-btn" @click="myEditor.upload">发布</a-button>
+      <a-button class="nav-btn" @click="myEditor.upload" :loading="myEditor.loading">发布</a-button>
     </div>
     <v-md-editor
       v-model="myEditor.text"
@@ -35,13 +35,19 @@ export default defineComponent({
     let route = useRoute();
     let router = useRouter();
 
+    // myEditer 对象
     let myEditor = reactive({
       text: oriText,
+      loading: false,
+
       resetContent: () => {
         myEditor.text = oriText;
       },
+
       upload: () => {
+        myEditor.loading = true;
         console.log(myEditor.text);
+        // 保存源文件
         new Promise((resolve, reject): void => {
           request({
             url: "/api/admin/articles/md_source",
@@ -56,6 +62,21 @@ export default defineComponent({
           })
             .then((res) => {
               message.success(res.data.message);
+              resolve(res);
+            })
+            .catch((err) => {
+              reject(err);
+            });
+        });
+        // 编译 vuepress
+        new Promise((resolve, reject): void => {
+          request({
+            url: "/api/admin/deploy-vuepress",
+            method: "get"
+          })
+            .then((res) => {
+              message.success(res.data.message);
+              myEditor.loading = false;
               resolve(res);
             })
             .catch((err) => {
@@ -77,10 +98,11 @@ export default defineComponent({
     });
 
     onMounted(() => {
+      // 向服务器获取数据
       console.log(route.params.path);
       if (route.params.path == "draft") {
         if (localStorage.getItem("draft")) {
-          myEditor.text = localStorage.getItem("draft");
+          myEditor.text = localStorage.getItem("draft") || '';
         }
       } else {
         new Promise((resolve, reject): void => {
@@ -93,6 +115,7 @@ export default defineComponent({
           })
             .then((res) => {
               myEditor.text = res.data.data;
+              message.success("加载成功~")
               resolve(res);
             })
             .catch((err) => {
