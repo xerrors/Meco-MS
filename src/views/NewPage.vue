@@ -58,7 +58,7 @@ export default defineComponent({
         // 保存源文件
         new Promise((resolve, reject): void => {
           request({
-            url: "/admin/articles/md_source",
+            url: "/api/admin/articles/md_source",
             method: "post",
             data: myEditor.text,
             headers: {
@@ -80,7 +80,7 @@ export default defineComponent({
         // 编译 vuepress
         new Promise((resolve, reject): void => {
           request({
-            url: "/admin/deploy-vuepress",
+            url: "/api/admin/deploy-vuepress",
             method: "get",
           })
             .then((res) => {
@@ -119,7 +119,7 @@ export default defineComponent({
         message.loading({ content: "正在向服务器获取数据……", key });
         new Promise((resolve, reject): void => {
           request({
-            url: "/admin/articles/md_source",
+            url: "/api/admin/articles/md_source",
             method: "get",
             params: {
               path: route.params.path,

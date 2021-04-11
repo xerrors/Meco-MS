@@ -113,7 +113,7 @@ export default defineComponent({
         data.loading = true;
         new Promise((resolve, reject) => {
           request({
-            url: "/admin/messages",
+            url: "/api/admin/messages",
             method: "get",
             params: {
               source: data.source,
@@ -135,7 +135,7 @@ export default defineComponent({
       markAsReaded: (id) => {
         new Promise((resolve, reject) => {
           request({
-            url: "/admin/readmessage",
+            url: "/api/admin/readmessage",
             method: "post",
             params: {
               id: id,
