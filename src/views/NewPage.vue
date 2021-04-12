@@ -2,12 +2,28 @@
   <div class="edit">
     <div class="navbar">
       <h1>编辑文章</h1>
-      <a-button
-        class="nav-btn"
-        @click="myEditor.upload"
-        :loading="buttonStatus!='发布'"
-        >{{ buttonStatus }}</a-button
-      >
+      <div class="nav-actions nav-btn">
+        <a-button @click="myEditor.saveDraft">保存草稿</a-button>
+        <a-dropdown-button
+          type="primary"
+          @click="myEditor.upload"
+          :loading="buttonStatus != '发布'">
+          {{ buttonStatus }}
+          <template #overlay>
+            <a-menu @click="toOtherPlat(myEditor.text)">
+              <a-menu-item key="CSDN">
+                转 CSDN
+              </a-menu-item>
+              <a-menu-item key="juejin">
+                转 掘金
+              </a-menu-item>
+              <a-menu-item key="zhihu">
+                转 知乎
+              </a-menu-item>
+            </a-menu>
+          </template>
+        </a-dropdown-button>
+      </div>
     </div>
     <!-- config: https://code-farmer-i.github.io/vue-markdown-editor/zh/ -->
     <v-md-editor
@@ -29,6 +45,7 @@ import { parseTime } from "../utils/format";
 import { message } from "ant-design-vue";
 
 import { useRoute, useRouter } from "vue-router";
+import { useClipboard } from "@vueuse/core";
 
 export default defineComponent({
   name: "NewPage",
@@ -37,12 +54,12 @@ export default defineComponent({
     const oriText: string =
       "---\ntitle: \ndate: " +
       date +
-      "\npermalink: /draft\ncover: \ntags: \n- \ncategories: \n\n---\n";
+      "\npermalink: /draft/\ncover: \ntags: \n- \ncategories: \n\n---\n";
 
     let route = useRoute();
     let router = useRouter();
 
-    const buttonStatus = ref("发布")
+    const buttonStatus = ref("发布");
 
     // myEditer 对象
     let myEditor = reactive({
@@ -53,7 +70,7 @@ export default defineComponent({
       },
 
       upload: () => {
-        buttonStatus.value = "上传中"
+        buttonStatus.value = "上传中";
         console.log(myEditor.text);
         // 保存源文件
         new Promise((resolve, reject): void => {
@@ -70,7 +87,7 @@ export default defineComponent({
           })
             .then((res) => {
               message.success(res.data.message);
-              buttonStatus.value = "编译中"
+              buttonStatus.value = "编译中";
               resolve(res);
             })
             .catch((err) => {
@@ -85,7 +102,7 @@ export default defineComponent({
           })
             .then((res) => {
               message.success(res.data.message);
-              buttonStatus.value = "发布"
+              buttonStatus.value = "发布";
               resolve(res);
             })
             .catch((err) => {
@@ -93,6 +110,10 @@ export default defineComponent({
             });
         });
       },
+
+      saveDraft: () => {
+        message.success("功能开发中~")
+      }
     });
 
     let toolbar = reactive({
@@ -162,13 +183,74 @@ export default defineComponent({
     handleSave(text: string, html: string) {
       localStorage.draft = text;
     },
+
+    onOpenNewPage(link: string): void {
+      window.open(link);
+    },
+
+    toOtherPlat(texts: string): void {
+      var result = texts;
+
+      const coverPatt = /cover:[ ]*.*/;
+      const permalinkPatt = /permalink:[ ]*.*/;
+
+      var cover: string = "";
+      var permalink: string = "";
+
+      var temp = coverPatt.exec(result);
+      if (temp) {
+        cover = String(temp).replace(" ", "").slice(6);
+      } else {
+        cover = "";
+      }
+
+      var temp = permalinkPatt.exec(result);
+      if (temp) {
+        permalink = String(temp).replace(" ", "").slice(10);
+      } else {
+        console.log("There is something WRONG!");
+      }
+
+      result = result.replace(/---[\s\S]*---/, "");
+
+      result =
+        `本文首发于个人博客：[https://xerrors.fun${permalink}](https://xerrors.fun${permalink})\n\n` +
+        `欢迎访问更多文章：[https://xerrors.fun](https://xerrors.fun)` +
+        result;
+
+      if (cover) {
+        result = "![封面](" + cover + ")\n\n" + result;
+      }
+
+      const { text, isSupported, copy } = useClipboard();
+      copy(result);
+      message.success("已经复制到剪贴板，去粘贴吧！", 3);
+      setTimeout(() => {
+        this.onOpenNewPage(
+          "https://mp.csdn.net/editor/html?spm=1011.2124.3001.5352"
+        );
+      }, 3000);
+    },
   },
 });
 </script>
+
+<style lang="scss" scoped>
+.nav-actions > * {
+  margin-left: 10px;
+}
+</style>
 
 <style lang="scss">
 .v-md-editor {
   box-shadow: none;
   min-height: calc(100vh - var(--navbar-height) - var(--footer-height));
+
+  &__toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 90;
+    background: white;
+  }
 }
 </style>
