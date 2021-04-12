@@ -7,8 +7,7 @@ import request from '../utils/request';
 const routes = [
   {
     path: '/',
-    name: 'HelloWorld',
-    component: () => import('../views/HelloWorld.vue'),
+    redirect: '/dashboard',
   },
   {
     path: '/login',
