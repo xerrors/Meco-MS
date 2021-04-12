@@ -10,7 +10,7 @@
       <main>
         <!-- <navbar></navbar> -->
         <router-view/>
-        <footer>Designed & Developed by Chen</footer>
+        <footer>Designed & Developed by Xerrors</footer>
       </main>
 
     </div>
