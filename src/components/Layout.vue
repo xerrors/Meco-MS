@@ -42,6 +42,7 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .default-container {
+  min-width: 850px;
   // background: linear-gradient(124.51deg, #EBF8FF 11.89%, #e5f1ff 86.3%);
   main{
     display: flex;

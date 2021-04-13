@@ -108,6 +108,7 @@ export default defineComponent({
         data.filted_articles = data.articles.filter(data.filter_date);
       },
 
+      // 这段写得跟 屎 一样，有时间重构一下
       getData: (source: string) => {
         data.loading = true;
         data.source = source;
