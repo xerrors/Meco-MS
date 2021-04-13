@@ -3,23 +3,22 @@
     <div class="navbar">
       <h1>编辑文章</h1>
       <div class="nav-actions nav-btn">
-        <a-button @click="myEditor.saveDraft">保存草稿</a-button>
+        <a-button
+          @click="myEditor.saveDraft"
+          :loading="draftBtnStatus != '保存草稿'"
+          >{{ draftBtnStatus }}</a-button
+        >
         <a-dropdown-button
           type="primary"
           @click="myEditor.upload"
-          :loading="buttonStatus != '发布'">
-          {{ buttonStatus }}
+          :loading="btnStatus != '发布'"
+        >
+          {{ btnStatus }}
           <template #overlay>
             <a-menu @click="toOtherPlat(myEditor.text)">
-              <a-menu-item key="CSDN">
-                转 CSDN
-              </a-menu-item>
-              <a-menu-item key="juejin">
-                转 掘金
-              </a-menu-item>
-              <a-menu-item key="zhihu">
-                转 知乎
-              </a-menu-item>
+              <a-menu-item key="CSDN"> 转 CSDN </a-menu-item>
+              <a-menu-item key="juejin"> 转 掘金 </a-menu-item>
+              <a-menu-item key="zhihu"> 转 知乎 </a-menu-item>
             </a-menu>
           </template>
         </a-dropdown-button>
@@ -59,19 +58,34 @@ export default defineComponent({
     let route = useRoute();
     let router = useRouter();
 
-    const buttonStatus = ref("发布");
+    const btnStatus = ref("发布");
+    const draftBtnStatus = ref("保存草稿");
 
     // myEditer 对象
     let myEditor = reactive({
       text: oriText,
+      draft: false,
 
       resetContent: () => {
         myEditor.text = oriText;
       },
 
+      saveDraft: () => {
+        message.success("功能开发中~");
+        myEditor.draft = true;
+      },
+
+      publish: () => {
+        myEditor.draft = false;
+      },
+
       upload: () => {
-        buttonStatus.value = "上传中";
-        console.log(myEditor.text);
+        if (!myEditor.draft) {
+          btnStatus.value = "上传中";
+        } else {
+          draftBtnStatus.value = "上传中";
+        }
+
         // 保存源文件
         new Promise((resolve, reject): void => {
           request({
@@ -87,7 +101,11 @@ export default defineComponent({
           })
             .then((res) => {
               message.success(res.data.message);
-              buttonStatus.value = "编译中";
+              if (!myEditor.draft) {
+                btnStatus.value = "编译中";
+              } else {
+                draftBtnStatus.value = "保存草稿";
+              }
               resolve(res);
             })
             .catch((err) => {
@@ -102,7 +120,7 @@ export default defineComponent({
           })
             .then((res) => {
               message.success(res.data.message);
-              buttonStatus.value = "发布";
+              btnStatus.value = "发布";
               resolve(res);
             })
             .catch((err) => {
@@ -110,10 +128,6 @@ export default defineComponent({
             });
         });
       },
-
-      saveDraft: () => {
-        message.success("功能开发中~")
-      }
     });
 
     let toolbar = reactive({
@@ -163,7 +177,7 @@ export default defineComponent({
     return {
       myEditor,
       toolbar,
-      buttonStatus,
+      btnStatus,
     };
   },
   methods: {
