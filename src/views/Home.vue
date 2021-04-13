@@ -11,19 +11,19 @@
       数据表现图表
     </div>
     <div class="block spc4">
-      2
+      近24h，一周，一个月的阅读量
     </div>
     <div class="block spc4 spr3">
-      3
+      阅读量的日周月变化曲线
     </div>
     <div class="block spc4 spr3">
-      4
+      阅读量文章排行
     </div>
     <div class="block spc4">
-      5
+      昨日新增点赞数评论数
     </div>
     <div class="block spc4">
-      6
+      累计访问量点赞数评论数
     </div>
     <div class="block spc4">
       7
@@ -35,16 +35,16 @@
       9
     </div>
     <div class="block">
-      10
+      CSDN
     </div>
     <div class="block">
-      11
+      掘金
     </div>
     <div class="block">
-      12
+      知乎
     </div>
     <div class="block">
-      13
+      微信
     </div>
   </div>
 </div>

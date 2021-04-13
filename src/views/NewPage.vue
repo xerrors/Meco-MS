@@ -15,10 +15,16 @@
         >
           {{ btnStatus }}
           <template #overlay>
-            <a-menu @click="toOtherPlat(myEditor.text)">
-              <a-menu-item key="CSDN"> 转 CSDN </a-menu-item>
-              <a-menu-item key="juejin"> 转 掘金 </a-menu-item>
-              <a-menu-item key="zhihu"> 转 知乎 </a-menu-item>
+            <a-menu @click="toOtherPlat">
+              <a-menu-item key="https://mp.csdn.net/editor/html">
+                转 CSDN
+              </a-menu-item>
+              <a-menu-item key="https://juejin.cn">
+                转 掘金
+              </a-menu-item>
+              <!-- <a-menu-item key="https://zhuanlan.zhihu.com/write">
+                转 知乎(知乎暂不支持使用markdown)
+              </a-menu-item> -->
             </a-menu>
           </template>
         </a-dropdown-button>
@@ -202,8 +208,8 @@ export default defineComponent({
       window.open(link);
     },
 
-    toOtherPlat(texts: string): void {
-      var result = texts;
+    toOtherPlat(e:any): void {
+      var result = this.myEditor.text;
 
       const coverPatt = /cover:[ ]*.*/;
       const permalinkPatt = /permalink:[ ]*.*/;
@@ -229,7 +235,7 @@ export default defineComponent({
 
       result =
         `本文首发于个人博客：[https://xerrors.fun${permalink}](https://xerrors.fun${permalink})\n\n` +
-        `欢迎访问更多文章：[https://xerrors.fun](https://xerrors.fun)` +
+        `欢迎访问更多文章：[https://xerrors.fun](https://xerrors.fun)\n\n---\n\n` +
         result;
 
       if (cover) {
@@ -240,9 +246,7 @@ export default defineComponent({
       copy(result);
       message.success("已经复制到剪贴板，去粘贴吧！", 3);
       setTimeout(() => {
-        this.onOpenNewPage(
-          "https://mp.csdn.net/editor/html?spm=1011.2124.3001.5352"
-        );
+        this.onOpenNewPage(e.key);
       }, 3000);
     },
   },
