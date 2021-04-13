@@ -21,6 +21,7 @@
     "@vueuse/core": "^4.8.1",
     "ant-design-vue": "^2.1.2",
     "axios": "^0.20.0-0",
+    "echarts": "^5.0.2",
     "js-cookie": "^2.2.1",
     "less": "^4.1.0",
     "sass": "^1.32.2",

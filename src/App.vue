@@ -6,11 +6,18 @@
 import { defineComponent } from 'vue';
 import Layout from './components/Layout.vue';
 
+// 暂时引用全部
+import * as echarts from 'echarts'
+import { provide } from 'vue'
+
 export default defineComponent({
   name: 'App',
   components: {
     Layout
   },
+  setup() {
+    provide('ec',echarts)//provide
+  }
 })
 </script>
 
