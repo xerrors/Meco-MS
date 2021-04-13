@@ -1,7 +1,7 @@
 <template>
   <div class="slides">
     <div class="logo">
-      XERRORS
+      MECO
     </div>
 
     <div class="button-panel">
