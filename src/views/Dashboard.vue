@@ -9,10 +9,10 @@
   <div class="main-container">
     <div class="block spc8 spr2">
       <h3>数据表现图表</h3>
-      <div></div>
+      <div id="chartsFlow"></div>
     </div>
     <div class="block spc4">
-      <h3>近24h，一周，一个月的阅读量</h3>
+      <h3>文章统计（累计/本月/掘金）</h3>
     </div>
     <div class="block spc4 spr3">
       <h3>头图管理</h3>
