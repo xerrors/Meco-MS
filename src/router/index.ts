@@ -8,6 +8,9 @@ const routes = [
   {
     path: '/',
     redirect: '/dashboard',
+    meta: {
+      specialLayout: true,
+    }
   },
   {
     path: '/login',

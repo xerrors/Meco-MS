@@ -9,12 +9,13 @@
   <div class="main-container">
     <div class="block spc8 spr2">
       <h3>数据表现图表</h3>
+      <div id="chartsFlow"></div>
     </div>
     <div class="block spc4">
       <h3>近24h，一周，一个月的阅读量</h3>
     </div>
     <div class="block spc4 spr3">
-      <h3>阅读量的日周月变化曲线</h3>
+      <h3>头图管理</h3>
     </div>
 
     <div class="block spc4 spr3">
@@ -104,13 +105,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref } from "vue";
+import { defineComponent, inject, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { joinPath } from "../utils/format";
 
 import request from "../utils/request";
 
 export default defineComponent({
+  name: "dashboard",
   setup() {
     let router = useRouter();
 
@@ -120,6 +122,46 @@ export default defineComponent({
 
     const countAll = ref({})
     const articles = ref([])
+
+    let echarts:any = inject("ec");//引入
+    onMounted(() => {//需要获取到element,所以是onMounted的Hook
+      let myChart = echarts.init(document.getElementById("chartsFlow"));
+      // 绘制图表
+      myChart.setOption({
+        tooltip: {},
+        legend: {},
+        grid: {
+          left: 30,
+          right: 20,
+          top: '15%',
+          bottom: '10%'
+        },
+        xAxis: {
+          data: ["12-3", "12-4", "12-5", "12-6", "12-7", "12-8"],
+        },
+        yAxis: [{},{}],
+        series: [
+          {
+            name: "评论数",
+            type: "line",
+            data: [5, 20, 36, 10, 10, 20],
+          },
+          {
+            name: "阅读量",
+            type: "line",
+            data: [10, 50, 23,62, 20, 50],
+          },
+          {
+            name: "点赞数",
+            type: "line",
+            data: [15, 40, 28, 37, 41, 18],
+          },
+        ],
+      });
+      window.onresize = function () {//自适应大小
+        myChart.resize();
+      };
+    });
 
     function getCount() {
       return new Promise((resolve, reject) => {
@@ -151,7 +193,6 @@ export default defineComponent({
               return Number(b.read_count) - Number(a.read_count)
             })
             articles.value = temp.slice(0,9)
-            console.log(articles.value)
             resolve(res);
           })
           .catch((err) => {
@@ -298,6 +339,11 @@ export default defineComponent({
 
     }
   }
+}
+
+#chartsFlow {
+  width: 100%;
+  height: calc(100% - 25px);
 }
 
 // 大于 1700px 的
