@@ -9,7 +9,7 @@
   <div class="main-container">
     <div class="block spc8 spr2">
       <h3>数据表现图表</h3>
-      <div id="chartsFlow"></div>
+      <div></div>
     </div>
     <div class="block spc4">
       <h3>近24h，一周，一个月的阅读量</h3>

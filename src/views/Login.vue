@@ -4,7 +4,7 @@
     <form class="login-form">
       <input v-model="formdata.username" type="text" placeholder="Username" required/>
       <input v-model="formdata.password" type="password" placeholder="Password" required/>
-      <a-button type="button" @click="formdata.submit" :disabled=formdata.disabled :loading=formdata.loading>Login</a-button>
+      <a-button type="primary" @click="formdata.submit" :disabled=formdata.disabled :loading=formdata.loading>Login</a-button>
     </form>
   </div>
 </template>
@@ -20,7 +20,7 @@ export default defineComponent({
   setup() {
     let router = useRouter();
 
-    let formdata = reactive({
+    let formdata:any = reactive({
       username: '',
       password: '',
       loading: false,
