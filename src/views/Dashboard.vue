@@ -1,107 +1,100 @@
 <template>
-<div class="home">
-  <div class="navbar">
-    <h1>后台总览</h1>
-    <a-button type="primary" class="nav-btn" @click="routerJump('/edit/draft')">
-      开始写作
-    </a-button>
-  </div>
-  <div class="main-container">
-    <div class="block spc8 spr2">
-      <h3>数据表现图表</h3>
-      <div id="chartsFlow"></div>
+  <div class="home">
+    <div class="navbar">
+      <h1>后台总览</h1>
+      <a-button
+        type="primary"
+        class="nav-btn"
+        @click="routerJump('/edit/draft')"
+      >
+        开始写作
+      </a-button>
     </div>
-    <div class="block spc4">
-      <h3>文章统计（累计/本月/掘金）</h3>
-    </div>
-    <div class="block spc4 spr3">
-      <h3>头图管理</h3>
-    </div>
+    <div class="main-container">
+      <div class="block spc8 spr2 data-charts">
+        <h3>数据表现</h3>
+        <div id="chartsFlow"></div>
+      </div>
+      <div class="block spc4">
+        <h3>文章统计（累计/本月/掘金）</h3>
+      </div>
+      <div class="block spc4 spr3">
+        <h3>头图管理</h3>
+      </div>
 
-    <div class="block spc4 spr3">
-      <h3>阅读量文章排行</h3>
-      <div class="pv-order-list">
-        <div v-for="(a, ind) in articles" :key="ind" class="list-item">
-          <span class="list-item-label">{{ ind+1 }}</span>
-          <span class="list-item-title"><a :href="a.link">{{ a.title }}</a></span>
-          <span class="list-item-count">{{ a.read_count }}</span>
+      <div class="block spc4 spr3">
+        <h3>阅读量文章排行</h3>
+        <div class="pv-order-list">
+          <div v-for="(a, ind) in articles" :key="ind" class="list-item">
+            <span class="list-item-label">{{ ind + 1 }}</span>
+            <span class="list-item-title"
+              ><a :href="a.link">{{ a.title }}</a></span
+            >
+            <span class="list-item-count">{{ a.read_count }}</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="block spc4">
-      <h3>全部数据</h3>
-      <div class="count-block">
-        <div class="tiny-block" style="margin-left: 0;">
-          <div>{{ countAll.all.pv }}</div>
-          <h4>访问量</h4>
-        </div>
-        <div class="tiny-block">
-          <div>{{ countAll.all.like }}</div>
-          <h4>点赞数</h4>
-        </div>
-        <div class="tiny-block" style="margin-right: 0;">
-          <div>{{ countAll.all.comment }}</div>
-          <h4>评论数</h4>
+      <div class="block spc4">
+        <h3>全部数据</h3>
+        <div class="count-block">
+          <div class="tiny-block" style="margin-left: 0">
+            <div>{{ countAll.all.pv }}</div>
+            <h4>访问量</h4>
+          </div>
+          <div class="tiny-block">
+            <div>{{ countAll.all.like }}</div>
+            <h4>点赞数</h4>
+          </div>
+          <div class="tiny-block" style="margin-right: 0">
+            <div>{{ countAll.all.comment }}</div>
+            <h4>评论数</h4>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="block spc4">
-      <h3>昨日数据</h3>
-      <div class="count-block">
-        <div class="tiny-block" style="margin-left: 0;">
-          <div>{{ countAll.day.pv }}</div>
-          <h4>访问量</h4>
-        </div>
-        <div class="tiny-block">
-          <div>{{ countAll.day.like }}</div>
-          <h4>点赞数</h4>
-        </div>
-        <div class="tiny-block" style="margin-right: 0;">
-          <div>{{ countAll.day.comment }}</div>
-          <h4>评论数</h4>
-        </div>
-      </div>
-    </div>
-    <div class="block spc4">
-      <h3>过去 30 天数据</h3>
-      <div class="count-block">
-        <div class="tiny-block" style="margin-left: 0;">
-          <div>{{ countAll.month.pv }}</div>
-          <h4>访问量</h4>
-        </div>
-        <div class="tiny-block">
-          <div>{{ countAll.month.like }}</div>
-          <h4>点赞数</h4>
-        </div>
-        <div class="tiny-block" style="margin-right: 0;">
-          <div>{{ countAll.month.comment }}</div>
-          <h4>评论数</h4>
+      <div class="block spc4">
+        <h3>昨日数据</h3>
+        <div class="count-block">
+          <div class="tiny-block" style="margin-left: 0">
+            <div>{{ countAll.day.pv }}</div>
+            <h4>访问量</h4>
+          </div>
+          <div class="tiny-block">
+            <div>{{ countAll.day.like }}</div>
+            <h4>点赞数</h4>
+          </div>
+          <div class="tiny-block" style="margin-right: 0">
+            <div>{{ countAll.day.comment }}</div>
+            <h4>评论数</h4>
+          </div>
         </div>
       </div>
-    </div>
+      <div class="block spc4">
+        <h3>过去 30 天数据</h3>
+        <div class="count-block">
+          <div class="tiny-block" style="margin-left: 0">
+            <div>{{ countAll.month.pv }}</div>
+            <h4>访问量</h4>
+          </div>
+          <div class="tiny-block">
+            <div>{{ countAll.month.like }}</div>
+            <h4>点赞数</h4>
+          </div>
+          <div class="tiny-block" style="margin-right: 0">
+            <div>{{ countAll.month.comment }}</div>
+            <h4>评论数</h4>
+          </div>
+        </div>
+      </div>
 
-
-    <div class="block spc4 spr2">
-      8
-    </div>
-    <div class="block spc4 spr2">
-      9
-    </div>
-    <div class="block spc2">
-      CSDN
-    </div>
-    <div class="block spc2">
-      掘金
-    </div>
-    <div class="block spc2">
-      知乎
-    </div>
-    <div class="block spc2">
-      微信
+      <div class="block spc4 spr2">8</div>
+      <div class="block spc4 spr2">9</div>
+      <div class="block spc2">CSDN</div>
+      <div class="block spc2">掘金</div>
+      <div class="block spc2">知乎</div>
+      <div class="block spc2">微信</div>
     </div>
   </div>
-</div>
 </template>
 
 <script lang="ts">
@@ -116,51 +109,17 @@ export default defineComponent({
   setup() {
     let router = useRouter();
 
-    const routerJump = (path:string):void => {
+    const routerJump = (path: string): void => {
       router.push(path);
     };
 
-    const countAll = ref({})
-    const articles = ref([])
-
-    let echarts:any = inject("ec");//引入
-    onMounted(() => {//需要获取到element,所以是onMounted的Hook
-      let myChart = echarts.init(document.getElementById("chartsFlow"));
-      // 绘制图表
-      myChart.setOption({
-        tooltip: {},
-        legend: {},
-        grid: {
-          left: 30,
-          right: 20,
-          top: '15%',
-          bottom: '10%'
-        },
-        xAxis: {
-          data: ["12-3", "12-4", "12-5", "12-6", "12-7", "12-8"],
-        },
-        yAxis: [{},{}],
-        series: [
-          {
-            name: "评论数",
-            type: "line",
-            data: [5, 20, 36, 10, 10, 20],
-          },
-          {
-            name: "阅读量",
-            type: "line",
-            data: [10, 50, 23,62, 20, 50],
-          },
-          {
-            name: "点赞数",
-            type: "line",
-            data: [15, 40, 28, 37, 41, 18],
-          },
-        ],
-      });
-      window.onresize = function () {//自适应大小
-        myChart.resize();
-      };
+    const articles = ref([]);
+    const serverStatus = ref({});
+    const countAll = ref({
+      all: { pv: 0, like: 0, comment: 0 },
+      day: { pv: 0, like: 0, comment: 0 },
+      week: { pv: 0, like: 0, comment: 0 },
+      month: { pv: 0, like: 0, comment: 0 }
     });
 
     function getCount() {
@@ -168,31 +127,9 @@ export default defineComponent({
         request({
           url: "/api/admin/count/all",
           method: "GET",
-        }).then(res => {
-          countAll.value = res.data.data;
-          resolve(res);
-        }).catch(err => {
-          reject(err);
-        })
-      })
-    }
-
-    function getArticles() {
-      new Promise((resolve, reject): void => {
-        request({
-          url: "/api/admin/articles",
-          method: "get",
-          params: { source: 'db' },
         })
           .then((res) => {
-            let temp = res.data.data.map((item:any) => {
-              item.link = joinPath("https://xerrors.fun/", item.permalink);
-              return item;
-            });
-            temp.sort((a:any, b:any) => {
-              return Number(b.read_count) - Number(a.read_count)
-            })
-            articles.value = temp.slice(0,9)
+            countAll.value = res.data.data;
             resolve(res);
           })
           .catch((err) => {
@@ -201,26 +138,133 @@ export default defineComponent({
       });
     }
 
+    function getArticles() {
+      new Promise((resolve, reject): void => {
+        request({
+          url: "/api/admin/articles",
+          method: "get",
+          params: { source: "db" },
+        })
+          .then((res) => {
+            let temp = res.data.data.map((item: any) => {
+              item.link = joinPath("https://xerrors.fun/", item.permalink);
+              return item;
+            });
+            temp.sort((a: any, b: any) => {
+              return Number(b.read_count) - Number(a.read_count);
+            });
+            articles.value = temp.slice(0, 9);
+            resolve(res);
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      });
+    }
+
+    function getServerStatus() {
+      new Promise((resolve, reject): void => {
+        request({
+          url: "/api/admin/status",
+          method: "get",
+        })
+          .then((res) => {
+            serverStatus.value = res.data.data;
+            resolve(res)
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      });
+    }
+
+    function getDaysData() {
+      new Promise((resolve, reject): void => {
+        request({
+          url: "/api/admin/count/days",
+          method: "get",
+          params: {
+            days: 60
+          }
+        })
+          .then((res) => {
+            createEchartsOption(res.data.data.reverse());
+            resolve(res)
+          })
+          .catch((err) => {
+            reject(err);
+          });
+      });
+
+    }
+
+    function createEchartsOption(daysData:any) {
+      const options = {
+        tooltip: {},
+        legend: { top: 3 },
+        grid: {
+          left: 25,
+          right: 30,
+          top: "20%",
+          bottom: "25%",
+        },
+        xAxis: {type: 'category'},
+        yAxis: [{},{}],
+        dataZoom: [
+          {   // 这个dataZoom组件，默认控制x轴。
+              type: 'slider', // 这个 dataZoom 组件是 slider 型 dataZoom 组件
+              start: 90,      // 左边在 10% 的位置。
+              end: 100         // 右边在 60% 的位置。
+          }
+        ],
+        dataset: {
+          source: daysData
+        },
+        series: [
+          { name: "阅读量", type: "line", yAxisIndex: 1 },
+          { name: "点赞数", type: "line", },
+          { name: "评论数", type: "line", },
+        ],
+      }
+      
+      //需要获取到element,所以是onMounted的Hook
+      let myChart = echarts.init(document.getElementById("chartsFlow"));
+      // 绘制图表
+      myChart.setOption(options);
+      window.onresize = function () {
+        //自适应大小
+        myChart.resize();
+      };
+    }
+
     getCount();
     getArticles();
+    getServerStatus();
+
+    let echarts: any = inject("ec"); //引入
+    onMounted(() => {
+      getDaysData();
+    });
+
 
 
     return {
       routerJump,
       countAll,
       articles,
-    }
-  }
-})
+      serverStatus,
+    };
+  },
+});
 </script>
 
 <style lang="scss" scoped>
 .main-container > .block {
   background: rgba(255, 255, 255, 0.6);
-  border: 1px solid #FFFFFF;
+  border: 1px solid #ffffff;
   box-sizing: border-box;
   // backdrop-filter: blur(32px);
-  box-shadow: 1px 0px 20px 8px rgba(0,0,0,0.05);
+  box-shadow: 1px 0px 20px 8px rgba(0, 0, 0, 0.05);
   /* Note: backdrop-filter has minimal browser support */
 
   border-radius: 16px;
@@ -247,7 +291,6 @@ export default defineComponent({
   .spr2 { grid-row: span 2; }
   .spr1 { grid-row: span 1; }
 }
-
 
 .main-container {
   grid-template-columns: repeat(12, 1fr);
@@ -279,7 +322,7 @@ export default defineComponent({
       font-family: initial;
       color: #0b76da;
       line-height: 2;
-      text-align: center
+      text-align: center;
     }
 
     > h4 {
@@ -324,10 +367,10 @@ export default defineComponent({
 
     .list-item-title {
       width: 100%;
-      word-break:keep-all;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      word-break: keep-all;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .list-item-count {
@@ -336,14 +379,19 @@ export default defineComponent({
       text-align: right;
       padding: 0px 8px;
       border-radius: 4px;
-
     }
   }
 }
 
-#chartsFlow {
-  width: 100%;
-  height: calc(100% - 25px);
+.data-charts {
+  h3 {
+    position: absolute;
+  }
+
+  #chartsFlow {
+    width: 100%;
+    height: 100%;
+  }
 }
 
 // 大于 1700px 的

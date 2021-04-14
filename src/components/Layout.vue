@@ -1,15 +1,15 @@
 <template>
   <div>
     <div v-if="route_meta.specialLayout">
-      <router-view/>
+      <router-view></router-view>
     </div>
 
     <div v-else class="default-container">
-      <slides/>
+      <slides></slides>
 
       <main>
         <!-- <navbar></navbar> -->
-        <router-view/>
+        <router-view></router-view>
         <footer>Designed & Developed by Xerrors</footer>
       </main>
 
