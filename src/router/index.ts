@@ -76,16 +76,25 @@ router.beforeEach((to, from, next) => {
   else {
     new Promise((resolve, reject): void => {
       request({
-        url: '/api/admin/login',
-        method: 'post',
+        url: '/api/admin/logged',
+        method: 'get',
       })
       .then(res => {
-        cookie.set('logged', '1');
-        next()
+        if (res.data.code == '1000') {
+          cookie.set('logged', '1');
+          resolve(res)
+        }
+        else if (res.data.code == '2000') {
+          message.error('请先登录~')
+          next('/login')
+          resolve(res)
+        }
+        else {
+          reject(new Error("数据返回异常"))
+        }
       })
       .catch(err => {
-        message.error('请先登录~')
-        next('/login')
+        reject(err)
       })
     });
   }

@@ -19,7 +19,7 @@
         <h3>文章统计（累计/本月/掘金）</h3>
       </div>
       <div class="block spc4 spr3">
-        <h3>头图管理</h3>
+        <Poster ></Poster>
       </div>
 
       <div class="block spc4 spr3">
@@ -89,8 +89,12 @@
 
       <div class="block spc4 spr2">8</div>
       <div class="block spc4 spr2">9</div>
-      <div class="block spc2">CSDN</div>
-      <div class="block spc2">掘金</div>
+      <div class="block spc2">
+        <div id="cpuChart" style="width: 100%; height: 100%;"></div>
+      </div>
+      <div class="block spc2">        
+        <div id="memChart" style="width: 100%; height: 100%;"></div>
+      </div>
       <div class="block spc2">知乎</div>
       <div class="block spc2">微信</div>
     </div>
@@ -98,23 +102,35 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, onMounted, ref } from "vue";
+import { defineComponent, inject, onMounted, ref, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import { joinPath } from "../utils/format";
+
+import Poster from '../components/Poster.vue';
 
 import request from "../utils/request";
 
 export default defineComponent({
   name: "dashboard",
+  components: {
+    Poster,
+  },
   setup() {
     let router = useRouter();
+    let localTimer: NodeJS.Timeout;
 
     const routerJump = (path: string): void => {
       router.push(path);
     };
 
+    let cpuChart: { resize: () => void; };
+    let memChart: { resize: () => void; };
+    let linChart: { resize: () => void; };
+
     const articles = ref([]);
-    const serverStatus = ref({});
+    const serverStatus = ref({
+      status: []
+    });
     const countAll = ref({
       all: { pv: 0, like: 0, comment: 0 },
       day: { pv: 0, like: 0, comment: 0 },
@@ -170,6 +186,8 @@ export default defineComponent({
         })
           .then((res) => {
             serverStatus.value = res.data.data;
+            createPieOption(cpuChart, "CPU", serverStatus.value.status[0], "#546fc6", "#bbddff")
+            createPieOption(memChart, "MEM", serverStatus.value.status[1], "#cc6670", "#ffbbaa")
             resolve(res)
           })
           .catch((err) => {
@@ -211,42 +229,83 @@ export default defineComponent({
         xAxis: {type: 'category'},
         yAxis: [{},{}],
         dataZoom: [
-          {   // 这个dataZoom组件，默认控制x轴。
-              type: 'slider', // 这个 dataZoom 组件是 slider 型 dataZoom 组件
-              start: 90,      // 左边在 10% 的位置。
-              end: 100         // 右边在 60% 的位置。
+          {
+              type: 'slider',
+              start: 90,
+              end: 100
           }
         ],
         dataset: {
           source: daysData
         },
         series: [
-          { name: "阅读量", type: "line", yAxisIndex: 1 },
-          { name: "点赞数", type: "line", },
-          { name: "评论数", type: "line", },
+          { name: "阅读量", smooth: true, type: "line", yAxisIndex: 1 },
+          { name: "点赞数", smooth: true, type: "line", },
+          { name: "评论数", smooth: true, type: "line", },
         ],
       }
       
       //需要获取到element,所以是onMounted的Hook
-      let myChart = echarts.init(document.getElementById("chartsFlow"));
       // 绘制图表
-      myChart.setOption(options);
-      window.onresize = function () {
-        //自适应大小
-        myChart.resize();
+      linChart.setOption(options);
+    }
+
+    function createPieOption(chart, name:string, persent:number, color1:string, color2: string) {
+      var option = {
+        color: [color1, color2],
+        title: {
+          text: name,
+          left: "center",
+          top: "center",
+          textStyle: {
+            fontWeight: "bold",
+            fontSize: 16,
+          }
+        },
+        series: [
+          {
+            type: 'pie',
+            radius: ['60%', '90%'],
+            label: {
+              show: false  
+            },
+            data: [
+              {value: persent},
+              {value: 100-persent},
+            ]
+          }
+        ]
       };
+      chart.setOption(option);
+    }
+
+    function initCharts() {
+      let echarts: any = inject("ec"); //引入
+      cpuChart = echarts.init(document.getElementById("cpuChart"));
+      memChart = echarts.init(document.getElementById("memChart"));
+      linChart = echarts.init(document.getElementById("chartsFlow"));
+      
+      window.onresize = function () {
+        cpuChart.resize();
+        memChart.resize();
+        linChart.resize();
+      };
+
     }
 
     getCount();
     getArticles();
     getServerStatus();
 
-    let echarts: any = inject("ec"); //引入
     onMounted(() => {
+      initCharts()
       getDaysData();
-    });
-
-
+      localTimer = setInterval(getServerStatus, 6000);
+    })
+    
+    onBeforeUnmount(() => {
+      clearInterval(localTimer);
+    })
 
     return {
       routerJump,
@@ -393,7 +452,6 @@ export default defineComponent({
     height: 100%;
   }
 }
-
 // 大于 1700px 的
 @media (min-width: 1700px) {
   .main-container {

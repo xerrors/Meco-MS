@@ -1,3 +1,4 @@
+import router from '../router'
 import { message } from 'ant-design-vue'
 import axios from 'axios'
 import Cookies from 'js-cookie'
@@ -24,7 +25,11 @@ axios.interceptors.request.use(
 axios.interceptors.response.use(
   response => {
     if (response.data.code === 2000) {
-      Cookies.remove('logged');
+      if (Cookies.get('logged')) {
+        message.error("登录超时，请重新登陆~")
+        // Cookies.remove('logged')
+        router.push('/login');
+      }
       return Promise.reject(new Error('未登录'))
     }
     return response
