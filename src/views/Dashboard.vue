@@ -15,8 +15,10 @@
         <h3>数据表现</h3>
         <div id="chartsFlow"></div>
       </div>
-      <div class="block spc4">
-        <h3>文章统计（累计/本月/掘金）</h3>
+      <div class="block spc4 yiju">
+        <h3 class="yiju__date">{{ yiju.date }}</h3>
+        <div class="yiju__content">{{ yiju.content }}</div>
+        <span class="yiju__origin">来自：{{ yiju.origin }}</span>
       </div>
       <div class="block spc4 spr3">
         <Poster ></Poster>
@@ -89,12 +91,8 @@
 
       <div class="block spc4 spr2">8</div>
       <div class="block spc4 spr2">9</div>
-      <div class="block spc2">
-        <div id="cpuChart" style="width: 100%; height: 100%;"></div>
-      </div>
-      <div class="block spc2">        
-        <div id="memChart" style="width: 100%; height: 100%;"></div>
-      </div>
+      <div id="cpuChart" class="block spc2"> </div>
+      <div id="memChart" class="block spc2"> </div>
       <div class="block spc2">知乎</div>
       <div class="block spc2">微信</div>
     </div>
@@ -102,9 +100,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, onMounted, ref, onBeforeUnmount } from "vue";
+import { defineComponent, inject, onMounted, ref, onBeforeUnmount, onUpdated, reactive } from "vue";
 import { useRouter } from "vue-router";
-import { joinPath } from "../utils/format";
+import { joinPath, parseTime } from "../utils/format";
 
 import Poster from '../components/Poster.vue';
 
@@ -131,6 +129,11 @@ export default defineComponent({
     const serverStatus = ref({
       status: []
     });
+    const yiju = reactive({
+      content: "",
+      origin: "",
+      date: parseTime(new Date(), '{y}年{m}月{d}日')
+    })
     const countAll = ref({
       all: { pv: 0, like: 0, comment: 0 },
       day: { pv: 0, like: 0, comment: 0 },
@@ -169,7 +172,7 @@ export default defineComponent({
             temp.sort((a: any, b: any) => {
               return Number(b.read_count) - Number(a.read_count);
             });
-            articles.value = temp.slice(0, 9);
+            articles.value = temp.slice(0, 20);
             resolve(res);
           })
           .catch((err) => {
@@ -293,18 +296,37 @@ export default defineComponent({
 
     }
 
+    function getYiju() {
+      new Promise((resolve, reject) => {
+        request.get("https://api.xygeng.cn/one")
+        .then(res => {
+          yiju.content = res.data.data.content;
+          yiju.origin = res.data.data.origin;
+          resolve(res);
+        })
+        .catch(err => {
+          reject(err)
+        })
+      })
+    }
+
     getCount();
     getArticles();
     getServerStatus();
+    getYiju();
 
     onMounted(() => {
       initCharts()
       getDaysData();
-      localTimer = setInterval(getServerStatus, 6000);
+      localTimer = setInterval(getServerStatus, 60000);
     })
     
     onBeforeUnmount(() => {
       clearInterval(localTimer);
+    })
+
+    onUpdated(() => {
+      getDaysData();
     })
 
     return {
@@ -312,6 +334,7 @@ export default defineComponent({
       countAll,
       articles,
       serverStatus,
+      yiju,
     };
   },
 });
@@ -334,7 +357,7 @@ export default defineComponent({
 .main-container {
   display: grid;
 
-  grid-auto-rows: 130px;
+  grid-auto-rows: 140px;
   grid-gap: 20px 24px;
 
   .spc8 { grid-column: span 8; }
@@ -366,6 +389,10 @@ export default defineComponent({
   // flex: auto;
   // justify-content: space-between;
   height: auto;
+
+  .tiny-block {
+    margin-top: 10px;
+  }
 
   > * {
     // background: white;
@@ -401,14 +428,18 @@ export default defineComponent({
 }
 
 .pv-order-list {
-  padding: 0.8rem 0;
+  margin: 0.8rem 0;
+  height: calc(100% - 1.6rem);
 
-  &:first-child {
+  &:first-child() {
     color: red;
   }
 
+  &::-webkit-scrollbar { width: 0 !important }
+  overflow: scroll;
+
   .list-item {
-    height: 40px;
+    height: 36px;
     width: 100%;
     display: flex;
     // justify-content: center;
@@ -420,7 +451,7 @@ export default defineComponent({
       border-radius: 50%;
       margin-right: 10px;
       text-align: center;
-      font-size: small;
+      font-weight: 600;
       line-height: 20px;
     }
 
@@ -430,14 +461,18 @@ export default defineComponent({
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      a {
+        color: inherit;
+      }
     }
 
     .list-item-count {
       margin-left: auto;
-      background: rgb(228, 243, 226);
+      background: #dbedff;
       text-align: right;
       padding: 0px 8px;
       border-radius: 4px;
+      font-size: smaller;
     }
   }
 }
@@ -452,6 +487,35 @@ export default defineComponent({
     height: 100%;
   }
 }
+
+.yiju {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  &__date {
+    // color: #0b76da;
+    line-height: 1.2;
+    border-left: 4px solid #0b76da;
+    padding-left: 0.6rem;
+  }
+
+  &__content {
+    height: auto;
+    margin: 4px 0;
+    overflow: scroll;
+    padding: 0;
+
+    &::-webkit-scrollbar { display: none; }
+    overflow: -moz-scrollbars-none;
+  }
+
+  &__origin {
+    font-size: small;
+    color: var(--text-color-secondary);
+  }
+}
+
 // 大于 1700px 的
 @media (min-width: 1700px) {
   .main-container {
