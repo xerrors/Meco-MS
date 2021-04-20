@@ -17,7 +17,7 @@
       </div>
       <div class="block spc4 yiju">
         <h3 class="yiju__date">{{ yiju.date }}</h3>
-        <div class="yiju__content">{{ yiju.content }}</div>
+        <div class="yiju__content hide-scrollbar">{{ yiju.content }}</div>
         <span class="yiju__origin">来自：{{ yiju.origin }}</span>
       </div>
       <div class="block spc4 spr3">
@@ -26,7 +26,7 @@
 
       <div class="block spc4 spr3">
         <h3>阅读量文章排行</h3>
-        <div class="pv-order-list">
+        <div class="pv-order-list hide-scrollbar">
           <div v-for="(a, ind) in articles" :key="ind" class="list-item">
             <span class="list-item-label">{{ ind + 1 }}</span>
             <span class="list-item-title"
@@ -209,7 +209,8 @@ export default defineComponent({
           }
         })
           .then((res) => {
-            createEchartsOption(res.data.data.reverse());
+            const chartData = res.data.data.reverse()
+            createEchartsOption(linChart, chartData);
             resolve(res)
           })
           .catch((err) => {
@@ -219,7 +220,7 @@ export default defineComponent({
 
     }
 
-    function createEchartsOption(daysData:any) {
+    function createEchartsOption(chart:any, daysData:any) {
       const options = {
         tooltip: {},
         legend: { top: 3 },
@@ -231,13 +232,11 @@ export default defineComponent({
         },
         xAxis: {type: 'category'},
         yAxis: [{},{}],
-        dataZoom: [
-          {
-              type: 'slider',
-              start: 90,
-              end: 100
-          }
-        ],
+        dataZoom: [{
+            type: 'slider',
+            start: 90,
+            end: 100
+          }],
         dataset: {
           source: daysData
         },
@@ -250,7 +249,7 @@ export default defineComponent({
       
       //需要获取到element,所以是onMounted的Hook
       // 绘制图表
-      linChart.setOption(options);
+      chart.setOption(options);
     }
 
     function createPieOption(chart, name:string, persent:number, color1:string, color2: string) {
@@ -313,6 +312,7 @@ export default defineComponent({
     getCount();
     getArticles();
     getServerStatus();
+    getDaysData();
     getYiju();
 
     onMounted(() => {
@@ -378,6 +378,10 @@ export default defineComponent({
   grid-template-columns: repeat(12, 1fr);
 }
 
+.block {
+  max-width: 100%;
+}
+
 .block > h3 {
   font-size: 16px;
   font-weight: bold;
@@ -435,8 +439,6 @@ export default defineComponent({
     color: red;
   }
 
-  &::-webkit-scrollbar { width: 0 !important }
-  overflow: scroll;
 
   .list-item {
     height: 36px;

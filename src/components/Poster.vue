@@ -24,7 +24,7 @@
     </a-form-item>
   </a-form>
   </a-modal>
-  <div class="posters">
+  <div class="posters hide-scrollbar">
     <div class="poster-card" v-for="poster in posters" :key="poster.link">
       <img :src="poster.cover + '?x-oss-process=image/resize,m_fill,h_200,w_600'" alt="cover">
       <span v-if="poster.top" class="top-label"> TOP </span>

@@ -15,7 +15,7 @@
         >
           {{ btnStatus }}
           <template #overlay>
-            <a-menu @click="toOtherPlat">
+            <a-menu @click="transmit.handleClick">
               <a-menu-item key="https://mp.csdn.net/editor/html">
                 转 CSDN
               </a-menu-item>
@@ -39,6 +39,25 @@
       @save="handleSave"
       :toolbar="toolbar"
     ></v-md-editor>
+    <!-- 右侧抽屉弹窗 -->
+    <a-drawer
+      title="请手动复制以下内容"
+      placement="right"
+      v-model:visible="transmit.show"
+      width="520"
+      class="drawer"
+    >
+      <a-textarea
+        class="drawer__textarea"
+        @focus="selectText"
+        v-model:value="transmit.text"
+        placeholder="Autosize height with minimum and maximum number of lines"
+        :autoSize="{maxRows: 20}"
+        style="margin-bottom: 20px;"
+      />
+      <a-button style="margin-right: 8px; margin-top: 16px;" @click="transmit.show=false">取消</a-button>
+      <a-button type="primary" style="margin-top: 16px;" :href="transmit.target" target="_blank">跳转</a-button>
+    </a-drawer>
   </div>
 </template>
 
@@ -49,7 +68,9 @@ import { parseTime } from "../utils/format";
 import { message } from "ant-design-vue";
 
 import { useRoute, useRouter } from "vue-router";
+
 import { useClipboard } from "@vueuse/core";
+import { usePermission } from '@vueuse/core'
 
 export default defineComponent({
   name: "NewPage",
@@ -67,7 +88,7 @@ export default defineComponent({
     const draftBtnStatus = ref("保存");
 
     // myEditer 对象
-    let myEditor = reactive({
+    const myEditor = reactive({
       text: oriText,
 
       resetContent: () => {
@@ -86,6 +107,31 @@ export default defineComponent({
       },
     });
 
+    const transmit = reactive({
+      show: false,
+      target: '',
+      text: '',
+      handleClick: (e) => {
+        transmit.target = e.key;
+        transmit.text = praseText(myEditor.text);
+        const { text, isSupported, copy } = useClipboard()
+
+        if (isSupported) {
+          const permissionRead = usePermission('clipboard-read')
+          const permissionWrite = usePermission('clipboard-write')
+          copy(transmit.text)
+          message.success("已经复制到剪贴板，3s后自动跳转~", 3);
+          setTimeout(() => {
+            window.open(transmit.target);
+          }, 3000);
+        } else {
+          message.error("浏览器不支持 Clipboard API，请手动复制")
+          transmit.show = true;
+        }
+      }
+    })
+
+    // 上传
     function upload(compile: boolean) {
       if (compile) {
         btnStatus.value = "上传中";
@@ -138,6 +184,7 @@ export default defineComponent({
       }
     }
 
+    // 加载数据
     function loadData(): void {
       const key: string = "load_data";
       if (route.params.path == "draft") {
@@ -168,6 +215,60 @@ export default defineComponent({
       }
     }
 
+    // 解析文本
+    function praseText(result:string):string {
+
+      const coverPatt = /cover:[ ]*.*/;
+      const permalinkPatt = /permalink:[ ]*.*/;
+      const titlePatt = /title:[ ]*.*/;
+
+      let temp:any;
+      var cover: string = "";
+      var permalink: string = "";
+      var title: string = "";
+
+      function replace_pun(sta_a: string): string {
+        return sta_a.replace(" ", "")
+                    .replace("'", "")
+                    .replace('"', '')
+      }
+
+      // 提取封面
+      temp = coverPatt.exec(result);
+      if (temp) {
+        cover = replace_pun(String(temp)).slice(6);
+      } else {
+        cover = "";
+      }
+      // 提取链接
+      temp = permalinkPatt.exec(result);
+      if (temp) {
+        permalink = replace_pun(String(temp)).slice(10);
+      } else {
+        console.log("There is something WRONG!");
+      }
+      // 提取标题
+      temp = titlePatt.exec(result);
+      if (temp) {
+        title = replace_pun(String(temp)).slice(6);
+      } else {
+        console.log("There is something WRONG!");
+      }
+
+      result = result.replace(/---[\s\S]*---/, "");
+
+      result =
+        `本文首发于个人博客：[https://xerrors.fun${permalink}](https://xerrors.fun${permalink})\n\n` +
+        `欢迎访问更多文章：[https://xerrors.fun](https://xerrors.fun)\n\n---\n\n` +
+        `# ${title}\n\n` +
+        result;
+
+      if (cover) {
+        result = "![封面](" + cover + ")\n\n" + result;
+      }
+      return result;
+    }
+
     onMounted(() => {
       // 向服务器获取数据
       console.log(route.params.path);
@@ -181,6 +282,7 @@ export default defineComponent({
       upload,
       btnStatus,
       draftBtnStatus,
+      transmit,
     };
   },
   methods: {
@@ -209,53 +311,9 @@ export default defineComponent({
       window.open(link);
     },
 
-    toOtherPlat(e: any): void {
-      var result = this.myEditor.text;
-
-      const coverPatt = /cover:[ ]*.*/;
-      const permalinkPatt = /permalink:[ ]*.*/;
-
-      var cover: string = "";
-      var permalink: string = "";
-
-      function replace_pun(sta_a: string): string {
-        return sta_a.replace(" ", "")
-                    .replace("'", "")
-                    .replace('"', '')
-      }
-
-      var temp = coverPatt.exec(result);
-      if (temp) {
-        cover = replace_pun(String(temp)).slice(6);
-      } else {
-        cover = "";
-      }
-
-      var temp = permalinkPatt.exec(result);
-      if (temp) {
-        permalink = replace_pun(String(temp)).slice(10);
-      } else {
-        console.log("There is something WRONG!");
-      }
-
-      result = result.replace(/---[\s\S]*---/, "");
-
-      result =
-        `本文首发于个人博客：[https://xerrors.fun${permalink}](https://xerrors.fun${permalink})\n\n` +
-        `欢迎访问更多文章：[https://xerrors.fun](https://xerrors.fun)\n\n---\n\n` +
-        result;
-
-      if (cover) {
-        result = "![封面](" + cover + ")\n\n" + result;
-      }
-
-      const { text, isSupported, copy } = useClipboard();
-      copy(result);
-      message.success("已经复制到剪贴板，3s后自动跳转~", 3);
-      setTimeout(() => {
-        this.onOpenNewPage(e.key);
-      }, 3000);
-    },
+    selectText:function(event){
+      event.currentTarget.select();
+    }
   },
 });
 </script>
@@ -263,6 +321,12 @@ export default defineComponent({
 <style lang="scss" scoped>
 .nav-actions > * {
   margin-left: 10px;
+}
+
+.drawer {
+  &__textarea {
+    max-height: 100px;
+  }
 }
 </style>
 
