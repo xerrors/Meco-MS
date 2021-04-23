@@ -24,7 +24,7 @@
         >
           <a-select-option value="db"> 本站 </a-select-option>
           <a-select-option value="csdn"> CSDN </a-select-option>
-          <a-select-option value="zhihu"> 知乎 </a-select-option>
+          <a-select-option value="juejin"> 掘金 </a-select-option>
         </a-select>
       </template>
       <template #renderItem="{ item }">
@@ -45,7 +45,7 @@
           </a-list-item-meta>
           <template #actions>
             <a-popconfirm
-              v-if="data.source=='csdn'"
+              v-if="data.source!='db'"
               placement="left"
               title="编辑文章需要在对应平台登录，是否跳转？"
               ok-text="是的"
@@ -122,17 +122,13 @@ export default defineComponent({
               let articles = res.data.data.map((item: any) => {
                 item.date = parseTime(new Date(item.date));
                 if (source === "csdn") {
-                  item.link =
-                    "https://blog.csdn.net/jaykm" +
-                    "/article/details/" +
-                    item.article_id;
-                  item.edit_link =
-                    "https://editor.csdn.net/md/?articleId=" + item.article_id;
+                  item.link = "https://blog.csdn.net/jaykm/article/details/" + item.article_id;
+                  item.edit_link = "https://editor.csdn.net/md/?articleId=" + item.article_id;
+                } else if (source == "juejin") {
+                  item.link = "https://juejin.cn/post/" + item.article_id;
+                  item.edit_link = "https://juejin.cn/editor/drafts/" + item.draft_id;
                 } else if (source == "db") {
-                  item.link = joinPath(
-                    "http://xerrors.fun/",
-                    item.permalink
-                  );
+                  item.link = joinPath("http://xerrors.fun/", item.permalink);
                 }
                 return item;
               });
@@ -202,7 +198,7 @@ export default defineComponent({
   align-items: center;
 
   & > .page-des-icon {
-    width: 15px;
+    width: 25px;
     margin: 0 20px 0 5px;
   }
 }
