@@ -3,15 +3,23 @@
     <div class="navbar">
       <h1>编辑文章</h1>
       <div class="nav-actions nav-btn">
+        <span>更新于：{{ myEditor.update_time }}</span>
         <a-button
-          @click="upload(false)"
-          :loading="draftBtnStatus != '保存'"
-          >{{ draftBtnStatus }}</a-button
+          @click="save_draft"
+          :loading="myEditor.processing==1"
+          :disabled="myEditor.processing!=0 && myEditor.processing!=1"
+          >存为草稿</a-button
+        >
+        <a-button
+          @click="revision"
+          :loading="myEditor.processing==2"
+          :disabled="myEditor.processing!=0 && myEditor.processing!=2"
+          >保存修订</a-button
         >
         <a-dropdown-button
           type="primary"
-          @click="upload(true)"
-          :loading="btnStatus != '发布'"
+          @click="save_and_compile"
+          :disabled="myEditor.processing!=0"
         >
           {{ btnStatus }}
           <template #overlay>
@@ -29,17 +37,19 @@
       </div>
     </div>
     <!-- config: https://code-farmer-i.github.io/vue-markdown-editor/zh/ -->
-    <v-md-editor
-      v-model="myEditor.text"
-      :disabled-menus="[]"
-      mode="edit"
-      autofocus
-      right-toolbar="preview toc sync-scroll fullscreen"
-      @upload-image="handleUploadImage"
-      @save="handleSave"
-      :toolbar="toolbar"
-    ></v-md-editor>
+    <a-spin :spinning="myEditor.loading">
+      <v-md-editor
+        v-model="myEditor.text"
+        :disabled-menus="[]"
+        mode="edit"
+        autofocus
+        right-toolbar="preview toc sync-scroll fullscreen"
+        @upload-image="handleUploadImage"
+        @save="handleSave"
+        :toolbar="toolbar"
+      ></v-md-editor>
     <!-- 右侧抽屉弹窗 -->
+    </a-spin>
     <a-drawer
       title="请手动复制以下内容"
       placement="right"
@@ -62,9 +72,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, onMounted, ref } from "vue";
+import { defineComponent, reactive, onMounted, ref, onBeforeUnmount } from "vue";
 import request from "../utils/request";
-import { parseTime } from "../utils/format";
+import { formatTime, parseTime } from "../utils/format";
 import { message } from "ant-design-vue";
 
 import { useRoute, useRouter } from "vue-router";
@@ -84,12 +94,17 @@ export default defineComponent({
     let route = useRoute();
     let router = useRouter();
 
-    const btnStatus = ref("发布");
-    const draftBtnStatus = ref("保存");
+    let localTimer: NodeJS.Timeout;
 
-    // myEditer 对象
+    const btnStatus = ref("发布");
+
+    // myEditor 对象
     const myEditor = reactive({
       text: oriText,
+      loading: true,
+      hash: 0,
+      processing: 0,
+      update_time: 'none',
 
       resetContent: () => {
         myEditor.text = oriText;
@@ -132,11 +147,9 @@ export default defineComponent({
     })
 
     // 上传
-    function upload(compile: boolean) {
+    function upload(revision:boolean, compile: boolean) {
       if (compile) {
         btnStatus.value = "上传中";
-      } else {
-        draftBtnStatus.value = "上传中";
       }
 
       // 保存源文件
@@ -150,18 +163,28 @@ export default defineComponent({
           },
           params: {
             path: route.params.path,
+            revision: revision ? 1 : 0
           },
         })
           .then((res) => {
-            message.success(res.data.message);
+            if (revision) {
+              if (route.params.path == 'draft' && res.data.data) {
+                router.push('/edit/' + res.data.data)
+              }
+              message.success(res.data.message);
+            }
             if (compile) {
               btnStatus.value = "编译中";
             } else {
-              draftBtnStatus.value = "保存";
+              myEditor.processing = 0;
             }
+            myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
+            myEditor.hash = customHash(myEditor.text)
             resolve(res);
           })
           .catch((err) => {
+            message.error("there is something wrong")
+            myEditor.processing = 0;
             reject(err);
           });
       });
@@ -175,9 +198,12 @@ export default defineComponent({
             .then((res) => {
               message.success(res.data.message);
               btnStatus.value = "发布";
+              myEditor.processing = 0;
               resolve(res);
             })
             .catch((err) => {
+              message.error("there is something wrong")
+              myEditor.processing = 0;
               reject(err);
             });
         });
@@ -186,33 +212,35 @@ export default defineComponent({
 
     // 加载数据
     function loadData(): void {
+      myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
       const key: string = "load_data";
-      if (route.params.path == "draft") {
-        if (localStorage.getItem("draft")) {
-          myEditor.text = localStorage.getItem("draft") || "";
-        }
-      } else {
-        message.loading({ content: "正在向服务器获取数据……", key });
-        new Promise((resolve, reject): void => {
-          request({
-            url: "/api/admin/articles/md_source",
-            method: "get",
-            params: {
-              path: route.params.path,
-            },
-          })
-            .then((res) => {
+      message.loading({ content: "正在向服务器获取数据……", key });
+      new Promise((resolve, reject): void => {
+        request({
+          url: "/api/admin/articles/md_source",
+          method: "get",
+          params: {
+            path: route.params.path,
+          },
+        })
+          .then((res) => {
+            if (res.data.data) {
               myEditor.text = res.data.data;
               message.success({ content: "加载成功~", key });
-              resolve(res);
-            })
-            .catch((err) => {
-              message.error({ content: "所访问的资源不存在", key });
-              router.push("/edit/draft");
-              reject(err);
-            });
-        });
-      }
+            } else {
+              message.success({ content: "从本地新建~", key })
+            }
+            
+            myEditor.loading = false;
+            resolve(res);
+          })
+          .catch((err) => {
+            message.error({ content: "所访问的资源不存在", key });
+            myEditor.loading = false;
+            router.push("/edit/draft");
+            reject(err);
+          });
+      });
     }
 
     // 解析文本
@@ -269,39 +297,94 @@ export default defineComponent({
       return result;
     }
 
+    function save_draft() {
+      myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
+      if (customHash(myEditor.text) != myEditor.hash) {
+        myEditor.processing = 1
+        upload(false, false)
+      }
+    }
+
+    function revision() {
+      myEditor.processing = 2
+      upload(true, false)
+    }
+
+    function save_and_compile() {
+      myEditor.processing = 3
+      upload(true, true)
+    }
+
+    // 此哈希函数来源于提问的解答：
+    // https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
+    function customHash (str:string) {
+      var hash = 0, i, chr;
+      for (i = 0; i < str.length; i++) {
+        chr   = str.charCodeAt(i);
+        hash  = ((hash << 5) - hash) + chr;
+        hash |= 0; // Convert to 32bit integer
+      }
+      return hash;
+    }
+
+    onBeforeUnmount(() => {
+      clearInterval(localTimer);
+    })
+    
     onMounted(() => {
       // 向服务器获取数据
       console.log(route.params.path);
-
       loadData();
+      localTimer = setInterval(save_draft, 10000);
     });
 
     return {
       myEditor,
       toolbar,
-      upload,
       btnStatus,
-      draftBtnStatus,
       transmit,
+      save_draft,
+      revision,
+      save_and_compile,
     };
   },
   methods: {
     handleUploadImage(event: any, insertImage: any, files: any) {
       // 拿到 files 之后上传到文件服务器，然后向编辑框中插入对应的内容
       console.log(files);
+      this.myEditor.loading = true;
 
-      // // 此处只做示例
-      // insertImage({
-      //   url:
-      //     'https://ss0.bdstatic.com/70cFvHSh_Q1YnxGkpoWK1HF6hhy/it/u=1269952892,3525182336&fm=26&gp=0.jpg',
-      //   desc: '七龙珠',
-      //   // width: 'auto',
-      //   // height: 'auto',
-      // });
+      new Promise((resolve, reject):void => {
+        request({
+          url: "/api/admin/post-image",
+          method: "post",
+          data: files[0],
+          params: {
+            filename: files[0].name,
+            rename_format: '%Y%m%d%H%M%S'
+          },
+          headers: {
+            "Content-Type": "multipart/form-data",
+          }
+        })
+        .then(res => {
+          console.log(res)
+          insertImage({
+            url: res.data.data,
+            desc: '图片',
+          });
+          
+          this.myEditor.loading = false;
+          resolve(res)
+        })
+        .catch(err => {
+          reject(err)
+        })
+      })
     },
 
     handleSave(text: string, html: string) {
-      this.upload(false);
+      this.save_draft();
     },
     handleChange(text: string, html: string) {
       localStorage.draft = text;
