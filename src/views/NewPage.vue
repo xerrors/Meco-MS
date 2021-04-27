@@ -46,6 +46,7 @@
         right-toolbar="preview toc sync-scroll fullscreen"
         @upload-image="handleUploadImage"
         @save="handleSave"
+        @change="handleChange"
         :toolbar="toolbar"
       ></v-md-editor>
     <!-- 右侧抽屉弹窗 -->
@@ -335,7 +336,7 @@ export default defineComponent({
       // 向服务器获取数据
       console.log(route.params.path);
       loadData();
-      localTimer = setInterval(save_draft, 10000);
+      localTimer = setInterval(save_draft, 3000);
     });
 
     return {
@@ -351,7 +352,7 @@ export default defineComponent({
   methods: {
     handleUploadImage(event: any, insertImage: any, files: any) {
       // 拿到 files 之后上传到文件服务器，然后向编辑框中插入对应的内容
-      console.log(files);
+      // console.log(files);
       this.myEditor.loading = true;
 
       new Promise((resolve, reject):void => {
@@ -384,10 +385,12 @@ export default defineComponent({
     },
 
     handleSave(text: string, html: string) {
+      message.success("文章会自动保存")
       this.save_draft();
     },
     handleChange(text: string, html: string) {
-      localStorage.draft = text;
+      // console.log(text)
+      // localStorage.draft = text;
     },
 
     onOpenNewPage(link: string): void {
