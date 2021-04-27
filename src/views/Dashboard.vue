@@ -30,7 +30,7 @@
           <div v-for="(a, ind) in articles" :key="ind" class="list-item">
             <span class="list-item-label">{{ ind + 1 }}</span>
             <span class="list-item-title"
-              ><a :href="a.link">{{ a.title }}</a></span
+              ><a :href="a.link" target="_blank">{{ a.title }}</a></span
             >
             <span class="list-item-count">{{ a.read_count }}</span>
           </div>
