@@ -44,8 +44,9 @@
             </template>
           </a-list-item-meta>
           <template #actions>
+            <a v-if="data.source=='db'" @click="routerJump('/edit/' + item.permalink)">编辑</a>
             <a-popconfirm
-              v-if="data.source!='db'"
+              v-else
               placement="left"
               title="编辑文章需要在对应平台登录，是否跳转？"
               ok-text="是的"
@@ -55,9 +56,19 @@
             >
               <a :href="item.edit_link" target="_blank">编辑</a>
             </a-popconfirm>
-            <a v-else @click="routerJump('/edit/' + item.permalink)">编辑</a>
             <a :href="item.link" target="_blank">查看</a>
-            <a style="color: var(--error-color)">删除</a>
+            <a-popconfirm
+              v-if="data.source=='db'" 
+              placement="left"
+              title="确定要删除吗？"
+              ok-text="删了"
+              cancel-text="手滑了"
+              @confirm="data.deleteDBFile(item.permalink)"
+              @cancel="onCancel"
+            >
+              <a style="color: var(--error-color)">删除</a>
+            </a-popconfirm>
+            <a v-else style="color: var(--error-color)">删除</a>
           </template>
         </a-list-item>
       </template>
@@ -108,7 +119,30 @@ export default defineComponent({
         data.filted_articles = data.articles.filter(data.filter_date);
       },
 
-      // 这段写得跟 屎 一样，有时间重构一下
+      praseArticles: (articles, source="db"):void => {
+        articles = articles.map((item: any) => {
+          item.date = parseTime(new Date(item.date));
+          if (source == "csdn") {
+            item.link = "https://blog.csdn.net/jaykm/article/details/" + item.article_id;
+            item.edit_link = "https://editor.csdn.net/md/?articleId=" + item.article_id;
+          } else if (source == "juejin") {
+            item.link = "https://juejin.cn/post/" + item.article_id;
+            item.edit_link = "https://juejin.cn/editor/drafts/" + item.draft_id;
+          } else if (source == "db") {
+            item.link = joinPath("https://xerrors.fun/", item.permalink);
+          }
+          return item;
+        });
+        
+        
+        articles.sort((a: any, b: any) => {
+          return Number(new Date(b.date)) - Number(new Date(a.date));
+        });
+
+        data.articles = articles;
+        data.filted_articles = articles.filter(data.filter_date);
+      },
+
       getData: (source: string) => {
         data.loading = true;
         data.source = source;
@@ -117,38 +151,32 @@ export default defineComponent({
             url: "/api/admin/articles",
             method: "get",
             params: { source: source },
-          })
-            .then((res) => {
-              let articles = res.data.data.map((item: any) => {
-                item.date = parseTime(new Date(item.date));
-                if (source === "csdn") {
-                  item.link = "https://blog.csdn.net/jaykm/article/details/" + item.article_id;
-                  item.edit_link = "https://editor.csdn.net/md/?articleId=" + item.article_id;
-                } else if (source == "juejin") {
-                  item.link = "https://juejin.cn/post/" + item.article_id;
-                  item.edit_link = "https://juejin.cn/editor/drafts/" + item.draft_id;
-                } else if (source == "db") {
-                  item.link = joinPath("http://xerrors.fun/", item.permalink);
-                }
-                return item;
-              });
-
-              articles.sort((a: any, b: any) => {
-                return Number(new Date(b.date)) - Number(new Date(a.date));
-              });
-
-              data.articles = articles;
-              data.filted_articles = articles.filter(data.filter_date);
-              data.loading = false;
-              message.success("加载完成");
-
-              resolve(res);
-            })
-            .catch((err) => {
-              reject(err);
-            });
+          }).then((res) => {
+            data.praseArticles(res.data.data);              
+            data.loading = false;
+            message.success("加载完成");
+            resolve(res);
+          }).catch((err) => {
+            reject(err);
+          });
         });
       },
+
+      deleteDBFile: (path:string) => {
+        new Promise((resolve, reject): void => {
+          request({
+            url: "/api/admin/articles/remove",
+            method: "post",
+            params: { path: path }
+          }).then(res => {
+            message.success(res.data.message);
+            data.praseArticles(res.data.data);
+            resolve(res);
+          }).catch(err => {
+            reject(err);
+          })
+        })
+      }
     });
 
     // data.articles = context.getData(data.source);
@@ -169,7 +197,7 @@ export default defineComponent({
     },
 
     onCancel() {
-      message.error("取消跳转");
+      message.error("操作取消");
     },
   },
 });
