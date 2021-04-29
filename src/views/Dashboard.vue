@@ -234,7 +234,7 @@ export default defineComponent({
         yAxis: [{},{}],
         dataZoom: [{
             type: 'slider',
-            start: 90,
+            start: 80,
             end: 100
           }],
         dataset: {

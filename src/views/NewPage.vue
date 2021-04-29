@@ -147,6 +147,28 @@ export default defineComponent({
       }
     })
 
+    function praseUploadRes(data:any, revision:boolean, compile:boolean) {
+      if (data.code && data.code == "403") {
+        message.error(data.message)
+        btnStatus.value = "发布";
+        myEditor.processing = 0;
+      } else {
+        if (revision && route.params.path == 'draft' && data.data) {
+          router.push('/edit/' + data.data)
+          message.success(data.message);
+        } else {
+          message.success("文章已自动保存~")
+        }
+
+        if (compile) {
+          btnStatus.value = "编译中";
+          compile_md()
+        } else {
+          myEditor.processing = 0;
+        }
+      }
+    }
+
     // 上传
     function upload(revision:boolean, compile: boolean) {
       if (compile) {
@@ -168,17 +190,7 @@ export default defineComponent({
           },
         })
           .then((res) => {
-            if (revision) {
-              if (route.params.path == 'draft' && res.data.data) {
-                router.push('/edit/' + res.data.data)
-              }
-              message.success(res.data.message);
-            }
-            if (compile) {
-              btnStatus.value = "编译中";
-            } else {
-              myEditor.processing = 0;
-            }
+            praseUploadRes(res.data, revision, compile);
             myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
             myEditor.hash = customHash(myEditor.text)
             resolve(res);
@@ -189,26 +201,26 @@ export default defineComponent({
             reject(err);
           });
       });
-      // 编译 vuepress
-      if (compile) {
-        new Promise((resolve, reject): void => {
-          request({
-            url: "/api/admin/deploy-vuepress",
-            method: "get",
+    }
+
+    function compile_md() {
+      new Promise((resolve, reject): void => {
+        request({
+          url: "/api/admin/deploy-vuepress",
+          method: "get",
+        })
+          .then((res) => {
+            message.success(res.data.message);
+            btnStatus.value = "发布";
+            myEditor.processing = 0;
+            resolve(res);
           })
-            .then((res) => {
-              message.success(res.data.message);
-              btnStatus.value = "发布";
-              myEditor.processing = 0;
-              resolve(res);
-            })
-            .catch((err) => {
-              message.error("there is something wrong")
-              myEditor.processing = 0;
-              reject(err);
-            });
-        });
-      }
+          .catch((err) => {
+            message.error("there is something wrong")
+            myEditor.processing = 0;
+            reject(err);
+          });
+      });
     }
 
     // 加载数据
@@ -231,7 +243,6 @@ export default defineComponent({
             } else {
               message.success({ content: "从本地新建~", key })
             }
-            
             myEditor.loading = false;
             resolve(res);
           })
@@ -336,7 +347,7 @@ export default defineComponent({
       // 向服务器获取数据
       console.log(route.params.path);
       loadData();
-      localTimer = setInterval(save_draft, 3000);
+      localTimer = setInterval(save_draft, 8000);
     });
 
     return {
@@ -385,7 +396,6 @@ export default defineComponent({
     },
 
     handleSave(text: string, html: string) {
-      message.success("文章会自动保存")
       this.save_draft();
     },
     handleChange(text: string, html: string) {
