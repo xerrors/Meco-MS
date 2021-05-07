@@ -89,12 +89,12 @@
         </div>
       </div>
 
-      <div class="block spc4 spr2">8</div>
-      <div class="block spc4 spr2">9</div>
+      <!-- <div class="block spc4 spr2">8</div>
+      <div class="block spc4 spr2">9</div> -->
       <div id="cpuChart" class="block spc2"> </div>
       <div id="memChart" class="block spc2"> </div>
-      <div class="block spc2">知乎</div>
-      <div class="block spc2">微信</div>
+      <!-- <div class="block spc2">知乎</div>
+      <div class="block spc2">微信</div> -->
     </div>
   </div>
 </template>
@@ -209,8 +209,7 @@ export default defineComponent({
           }
         })
           .then((res) => {
-            const chartData = res.data.data.reverse()
-            createEchartsOption(linChart, chartData);
+            createEchartsOption(linChart, res.data.data.reverse());
             resolve(res)
           })
           .catch((err) => {
@@ -312,7 +311,7 @@ export default defineComponent({
     getCount();
     getArticles();
     getServerStatus();
-    getDaysData();
+    // getDaysData();
     getYiju();
 
     onMounted(() => {
@@ -326,7 +325,7 @@ export default defineComponent({
     })
 
     onUpdated(() => {
-      getDaysData();
+      // getDaysData();
     })
 
     return {
