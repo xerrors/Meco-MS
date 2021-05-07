@@ -8,7 +8,6 @@
       <router-link to="/dashboard"><DashboardOutlined />后台总览</router-link>
       <router-link to="/pages"><FileTextOutlined />文章管理</router-link>
       <router-link to="/messages"><CommentOutlined />消息管理</router-link>
-      <router-link to="/server-monitor"><DatabaseOutlined />服务器</router-link>
     </div>
 
     <div class="logout">
