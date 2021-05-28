@@ -245,10 +245,8 @@ export default defineComponent({
           { name: "评论数", smooth: true, type: "line", },
         ],
       }
-      
-      //需要获取到element,所以是onMounted的Hook
-      // 绘制图表
       chart.setOption(options);
+      console.log("Demo")
     }
 
     function createPieOption(chart, name:string, persent:number, color1:string, color2: string) {
@@ -281,6 +279,7 @@ export default defineComponent({
     }
 
     function initCharts() {
+      console.log("Init")
       let echarts: any = inject("ec"); //引入
       cpuChart = echarts.init(document.getElementById("cpuChart"));
       memChart = echarts.init(document.getElementById("memChart"));
@@ -310,12 +309,13 @@ export default defineComponent({
 
     getCount();
     getArticles();
-    getServerStatus();
+    // getServerStatus();
     // getDaysData();
     getYiju();
 
     onMounted(() => {
       initCharts()
+      getServerStatus()
       getDaysData();
       localTimer = setInterval(getServerStatus, 60000);
     })
