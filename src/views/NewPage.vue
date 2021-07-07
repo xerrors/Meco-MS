@@ -42,6 +42,7 @@
         v-model="myEditor.text"
         :disabled-menus="[]"
         mode="edit"
+        left-toolbar="undo redo clear| h bold italic strikethrough quote | ul ol table hr | link image code | save template"
         autofocus
         right-toolbar="preview toc sync-scroll fullscreen"
         @upload-image="handleUploadImage"
@@ -87,10 +88,49 @@ export default defineComponent({
   name: "NewPage",
   setup() {
     const date: string = parseTime(new Date());
-    const oriText: string =
-      "---\ntitle: \ndate: " +
-      date +
-      "\npermalink: /draft/\ncover: \ntags: \n- \ncategories: \n\n---\n";
+
+    const items = {
+      title: "",
+      date: parseTime(new Date()),
+      permalink: "/draft/",
+      cover: "",
+      tags: [],
+      categories: "" 
+    }
+
+    const weekPostItems = {
+      title: "",
+      date: parseTime(new Date()),
+      permalink: "/" + parseTime(new Date(), "{y}-{m}-{d}") +"-week-post/",
+      cover: "https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210430165756-image.png",
+      tags: ["周报"],
+      categories: "周报",
+      abstract: "摘要"
+    }
+
+    const parseItems = (items) => {
+      var text: string = "---\n"
+      for (var i in items) {
+        if (typeof(items[i]) == "string") {
+          text += i + ": " + items[i] + "\n";
+        } else {
+          text += i + ": " + "\n- ";
+          text += items[i].join("\n- ")
+          text += "\n"
+        }
+      }
+      text += "\n---\n"
+
+      console.log(text)
+      return text
+    }
+
+    const templates = {
+      "default": parseItems(items),
+      "weekpost": parseItems(weekPostItems)
+    }
+
+    // console.log(templates);
 
     let route = useRoute();
     let router = useRouter();
@@ -101,14 +141,14 @@ export default defineComponent({
 
     // myEditor 对象
     const myEditor = reactive({
-      text: oriText,
+      text: templates['default'],
       loading: true,
       hash: 0,
       processing: 0,
       update_time: 'none',
 
-      resetContent: () => {
-        myEditor.text = oriText;
+      resetContent: (text) => {
+        myEditor.text = text;
       },
     });
 
@@ -117,10 +157,30 @@ export default defineComponent({
         icon: "v-md-icon-clear",
         title: "重置内容",
         action(editor: any) {
-          myEditor.resetContent();
+          myEditor.resetContent(templates['default']);
           localStorage.removeItem(String(route.params.path));
         },
       },
+      template: {
+        title: "使用模板",
+        icon: "v-md-icon-tip",
+        menus: [
+          {
+            name: "默认",
+            text: "默认模板",
+            action() {
+              myEditor.resetContent(templates['default']);
+            }
+          }, 
+          {
+            name: "周报",
+            text: "周报模板",
+            action() {
+              myEditor.resetContent(templates['weekpost']);
+            }
+          }
+        ]
+      }
     });
 
     const transmit = reactive({
