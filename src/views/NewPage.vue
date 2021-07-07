@@ -2,7 +2,7 @@
   <div class="edit">
     <div class="navbar">
       <h1>编辑文章</h1>
-      <div class="nav-actions nav-btn">
+      <div class="nav-actions">
         <span>更新于：{{ myEditor.update_time }}</span>
         <a-button
           @click="save_draft"
@@ -415,8 +415,12 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-.nav-actions > * {
-  margin-left: 10px;
+.nav-actions {
+  margin-right: 0;
+  margin-left: auto;
+  & > * {
+    margin-left: 10px;
+  }
 }
 
 .drawer {

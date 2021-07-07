@@ -208,6 +208,10 @@ export default defineComponent({
   display: inline-block;
 }
 
+.ant-list-item,.ant-list-header, .ant-list-footer {
+  padding: 12px 16px;
+}
+
 .ant-list-item:hover {
   background: white;
 }
@@ -256,11 +260,11 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .pages {
-  padding: 8px 20px;
-  background: rgba(255, 255, 255, 0.8);
+  padding: 8px 0px;
+  background: rgba(250, 253, 255, 0.8);
   border-radius: 16px;
   min-height: 300px;
-  border: 1px solid white;
-  // box-shadow: 1px 1px 12px 2px rgba(0, 0, 0, 0.05);
+  border: 2px solid white;
+  box-shadow: 0px 0px 10px 4px rgb(44 123 255 / 5%);
 }
 </style>

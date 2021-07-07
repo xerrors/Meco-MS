@@ -342,10 +342,10 @@ export default defineComponent({
 <style lang="scss" scoped>
 .main-container > .block {
   background: rgba(255, 255, 255, 0.6);
-  border: 1px solid #ffffff;
+  border: 2px solid #ffffff;
   box-sizing: border-box;
   // backdrop-filter: blur(32px);
-  box-shadow: 1px 0px 20px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 0px 0px 10px 4px rgb(44 123 255 / 5%);
   /* Note: backdrop-filter has minimal browser support */
 
   border-radius: 16px;

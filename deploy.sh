@@ -4,13 +4,13 @@
 # 进入到项目目录
 cd `dirname $0`
 
-git pull
+# git pull
 
 # 确保脚本抛出遇到的错误
 set -e
 
 # 生成静态文件
-yarn build
+# yarn build
 
 # 停止之前已经在运行的 docker
 docker stop mecoms || echo 'skip...'

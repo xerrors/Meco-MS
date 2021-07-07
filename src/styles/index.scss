@@ -75,6 +75,10 @@ button {
   .nav-btn {
     margin-left: auto;
     border-radius: 8px;
+    padding: 8px 16px;
+    height: auto;
+    border: 2px solid white;
+    letter-spacing: 1px;
   }
 }
 
@@ -95,4 +99,5 @@ button {
     display: none;
   }
 }
+
 
