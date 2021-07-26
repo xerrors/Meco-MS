@@ -10,14 +10,16 @@ cd `dirname $0`
 set -e
 
 # 生成静态文件
-# yarn build
+yarn build
+
+cp -r dist/* /www/wwwroot/ms.xerrors.fun/
 
 # 停止之前已经在运行的 docker
-docker stop mecoms || echo 'skip...'
+# docker stop mecoms || echo 'skip...'
 
-# build & run
-docker build --tag vite-deploy .
+# # build & run
+# docker build --tag vite-deploy .
 
-docker run -d -p 5001:80 --rm --name mecoms vite-deploy
+# docker run -d -p 5001:80 --rm --name mecoms vite-deploy
 
-echo "访问：http://ms.xerrors.fun"
+# echo "访问：http://ms.xerrors.fun"

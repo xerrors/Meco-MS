@@ -21,10 +21,12 @@ export default defineConfig({
     ]
   },
   server: {
+    cors: true,
     proxy: {
       '/api': {
         target: 'https://www.xerrors.fun:5000/',
         changeOrigin: true,
+        ws: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
       }
     }
