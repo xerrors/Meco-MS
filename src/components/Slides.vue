@@ -1,5 +1,5 @@
 <template>
-  <div class="slides">
+  <div class="slides round">
     <div class="logo">
       MECO
     </div>
@@ -86,18 +86,19 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .slides.round {
-  width: calc(var(--slides-width) - 20px);
-  height: calc(100vh - 40px);
+  --slide-margin-width: 24px;
+  width: calc(var(--slides-width) - var(--slide-margin-width));
+  height: calc(100vh - var(--slide-margin-width) * 2);
 
-  background: rgba(255, 255, 255, 0.8);
-  border: 1px solid #FFFFFF;
-  border-radius: 32px;
-  margin: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  border: 2px solid #FFFFFF;
+  border-radius: 16px;
+  margin: var(--slide-margin-width);
   
   box-sizing: border-box;
   // backdrop-filter: blur(32px);
 
-  box-shadow: 1px 0px 20px 8px rgba(0,0,0,0.05);
+  box-shadow: 0px 0px 10px 4px rgb(44 123 255 / 5%);
 }
 
 .slides {
@@ -125,7 +126,7 @@ export default defineComponent({
     
     font-size: 28px;
     font-weight: bold;
-    color: black;
+    color: #333;
 
     height: 50px;
   }
@@ -148,7 +149,7 @@ export default defineComponent({
       margin: 24px;
       padding: 8px 28px;
 
-      color: black;
+      color: #333;
       font-weight: bold;
       text-decoration: none;
 
@@ -160,12 +161,12 @@ export default defineComponent({
       transition: background .2s ease-in-out;
 
       &:hover:not(.router-link-active) {
-        background: #f8f8f8;
+        background: #f0f2fa;
       }
     }
 
     .router-link-active {
-      background: black;
+      background: #333;
       color: white;
     }
   }
@@ -185,11 +186,11 @@ export default defineComponent({
       border-radius: 8px;
 
       &:hover {
-        background: #f8f8f8;
+        background: #f0f2fa;
       }
 
       &:active {
-        background: #e8e8e8;
+        background: #f0f2fa;
       }
 
     }
