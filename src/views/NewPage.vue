@@ -222,7 +222,7 @@ export default defineComponent({
 
         if (compile) {
           btnStatus.value = "编译中";
-          compile_md()
+          compile_md();
         } else {
           myEditor.processing = 0;
         }
@@ -233,6 +233,7 @@ export default defineComponent({
     function upload(revision:boolean, compile: boolean) {
       if (compile) {
         btnStatus.value = "上传中";
+        myEditor.loading = true;
       }
 
       // 保存源文件
@@ -273,6 +274,7 @@ export default defineComponent({
             message.success(res.data.message);
             btnStatus.value = "发布";
             myEditor.processing = 0;
+            myEditor.loading = false;
             resolve(res);
           })
           .catch((err) => {
