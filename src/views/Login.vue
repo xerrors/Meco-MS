@@ -17,9 +17,12 @@ import { useRouter } from 'vue-router';
 import cookie from 'js-cookie';
 import request from '../utils/request';
 
+import { onKeyStroke } from '@vueuse/core';
+
 export default defineComponent({
   setup() {
     let router = useRouter();
+    
 
     let formdata:any = reactive({
       username: '',
@@ -61,6 +64,10 @@ export default defineComponent({
         });
       },
     });
+
+    onKeyStroke('Enter', (e: KeyboardEvent) => {
+      formdata.submit();
+    })
 
     return {
       formdata,
