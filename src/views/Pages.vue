@@ -15,6 +15,13 @@
           共 {{ data.filted_articles.length }} 篇文章
         </h2>
         <a-date-picker :value="data.endDate" @change="data.onDateChange" />
+        <!-- 搜索框 -->
+        <a-input-search
+          v-model:value="data.searchKeyword"
+          placeholder="搜索"
+          style="width: 200px;"
+          @search="data.onSearch"
+        />
         <a-select
           :value="data.source"
           style="width: 100px"
@@ -100,9 +107,34 @@ export default defineComponent({
       filted_articles: [],
       loading: false,
       endDate: "",
+      searchKeyword: "",
 
       filter_date: (item: any): boolean => {
         return true;
+      },
+
+      filter_search: (item: any): boolean => {
+        return true;
+      },
+
+      onSearch: (searchValue: string) => {
+        if (searchValue) {
+          const keys = searchValue.split(' ');
+          data.filter_search = (item) => {
+            for (var i=0;i<keys.length;i++) {
+              if (item.title.toLowerCase().search(keys[i].toLowerCase()) == -1) {
+                return false;
+              }
+            }
+            return true;
+          };
+        } else {
+          data.filter_search = (): boolean => {
+            return true;
+          };
+        }
+        
+        data.filted_articles = data.articles.filter(data.filter_search);
       },
 
       onDateChange: (selectDate: Date, dateString: string) => {
@@ -252,7 +284,8 @@ export default defineComponent({
 }
 
 .ant-select,
-.ant-calendar-picker {
+.ant-calendar-picker,
+.ant-input-search {
   margin-left: 20px;
   float: right;
 }
