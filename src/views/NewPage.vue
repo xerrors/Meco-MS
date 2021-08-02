@@ -483,6 +483,19 @@ export default defineComponent({
   & > * {
     margin-left: 10px;
   }
+
+  .ant-btn {
+    background: #e9fafe;
+    padding: 4px 16px;
+    height: auto;
+  }
+
+  .ant-btn, .ant-btn-group {
+    overflow: hidden;
+    border-radius: 8px;
+
+    border: 2px solid white;
+  }
 }
 
 .drawer {
@@ -495,7 +508,13 @@ export default defineComponent({
 <style lang="scss">
 .v-md-editor {
   box-shadow: none;
-  min-height: calc(100vh - var(--navbar-height) - var(--footer-height));
+  // min-height: calc(100vh - var(--navbar-height) - var(--footer-height));
+  height: calc(100vh - var(--navbar-height) - var(--footer-height));
+
+  border-radius: 16px;
+  border: 2px solid white;
+  box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
+  overflow: hidden;
 
   &__toolbar {
     position: sticky;

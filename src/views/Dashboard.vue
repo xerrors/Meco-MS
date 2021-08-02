@@ -13,7 +13,7 @@
     <div class="main-container">
       <div class="block spc8 spr2 data-charts">
         <h3>数据表现</h3>
-        <div id="chartsFlow"></div>
+        <v-chart class="chart" :option="options.count" />
       </div>
       <div class="block spc4 yiju">
         <h3 class="yiju__date">{{ yiju.date }}</h3>
@@ -91,16 +91,16 @@
 
       <!-- <div class="block spc4 spr2">8</div>
       <div class="block spc4 spr2">9</div> -->
-      <div id="cpuChart" class="block spc2"> </div>
-      <div id="memChart" class="block spc2"> </div>
-      <!-- <div class="block spc2">知乎</div>
-      <div class="block spc2">微信</div> -->
+      <!-- <div class="block spc2"></div>
+      <div class="block spc2"></div> -->
+      <div class="block spc2"><v-chart class="chart" :option="options.cpu" /></div>
+      <div class="block spc2"><v-chart class="chart" :option="options.mem" /></div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, inject, onMounted, ref, onBeforeUnmount, onUpdated, reactive } from "vue";
+import { defineComponent, onMounted, ref, onBeforeUnmount, reactive, onBeforeUpdate } from "vue";
 import { useRouter } from "vue-router";
 import { joinPath, parseTime } from "../utils/format";
 
@@ -108,10 +108,39 @@ import Poster from '../components/Poster.vue';
 
 import request from "../utils/request";
 
+import { use } from "echarts/core";
+import { CanvasRenderer } from "echarts/renderers";
+import { PieChart, LineChart } from "echarts/charts";
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+  DataZoomComponent,
+  DatasetComponent,
+} from "echarts/components";
+import VChart, {THEME_KEY} from "vue-echarts";
+
+use([
+  CanvasRenderer,
+  PieChart,
+  LineChart,
+  GridComponent,
+  TitleComponent,
+  TooltipComponent,
+  DataZoomComponent,
+  LegendComponent,
+  DatasetComponent,
+]);
+
 export default defineComponent({
   name: "dashboard",
   components: {
     Poster,
+    VChart,
+  },
+  provide: {
+    // [THEME_KEY]: "dark"
   },
   setup() {
     let router = useRouter();
@@ -121,14 +150,17 @@ export default defineComponent({
       router.push(path);
     };
 
-    let cpuChart: { resize: () => void; };
-    let memChart: { resize: () => void; };
-    let linChart: { resize: () => void; };
+    const options = reactive({
+      count: {},
+      cpu: {},
+      mem: {}
+    })
 
     const articles = ref([]);
     const serverStatus = ref({
       status: []
     });
+
     const yiju = reactive({
       content: "",
       origin: "",
@@ -180,7 +212,6 @@ export default defineComponent({
           });
       });
     }
-
     function getServerStatus() {
       new Promise((resolve, reject): void => {
         request({
@@ -189,8 +220,8 @@ export default defineComponent({
         })
           .then((res) => {
             serverStatus.value = res.data.data;
-            createPieOption(cpuChart, "CPU", serverStatus.value.status[0], "#546fc6", "#bbddff")
-            createPieOption(memChart, "MEM", serverStatus.value.status[1], "#cc6670", "#ffbbaa")
+            options.cpu = createPieOption("CPU", serverStatus.value.status[0], "#546fc6", "#bbddff");
+            options.mem = createPieOption("MEM", serverStatus.value.status[1], "#cc6670", "#ffbbaa")
             resolve(res)
           })
           .catch((err) => {
@@ -209,7 +240,7 @@ export default defineComponent({
           }
         })
           .then((res) => {
-            createEchartsOption(linChart, res.data.data.reverse());
+            options.count = createEchartsOption(res.data.data.reverse());
             resolve(res)
           })
           .catch((err) => {
@@ -219,8 +250,8 @@ export default defineComponent({
 
     }
 
-    function createEchartsOption(chart:any, daysData:any) {
-      const options = {
+    function createEchartsOption(daysData:any) {
+      var option = {
         tooltip: {},
         legend: { top: 3 },
         grid: {
@@ -244,12 +275,11 @@ export default defineComponent({
           { name: "点赞数", smooth: true, type: "line", },
           { name: "评论数", smooth: true, type: "line", },
         ],
-      }
-      chart.setOption(options);
-      console.log("Demo")
+      };
+      return option;
     }
 
-    function createPieOption(chart, name:string, persent:number, color1:string, color2: string) {
+    function createPieOption(name:string, persent:number, color1:string, color2: string) {
       var option = {
         color: [color1, color2],
         title: {
@@ -275,22 +305,7 @@ export default defineComponent({
           }
         ]
       };
-      chart.setOption(option);
-    }
-
-    function initCharts() {
-      console.log("Init")
-      let echarts: any = inject("ec"); //引入
-      cpuChart = echarts.init(document.getElementById("cpuChart"));
-      memChart = echarts.init(document.getElementById("memChart"));
-      linChart = echarts.init(document.getElementById("chartsFlow"));
-      
-      window.onresize = function () {
-        cpuChart.resize();
-        memChart.resize();
-        linChart.resize();
-      };
-
+      return option;
     }
 
     function getYiju() {
@@ -309,14 +324,11 @@ export default defineComponent({
 
     getCount();
     getArticles();
-    // getServerStatus();
-    // getDaysData();
     getYiju();
+    getDaysData();
+    getServerStatus();
 
     onMounted(() => {
-      initCharts()
-      getServerStatus()
-      getDaysData();
       localTimer = setInterval(getServerStatus, 60000);
     })
     
@@ -324,9 +336,8 @@ export default defineComponent({
       clearInterval(localTimer);
     })
 
-    onUpdated(() => {
-      // getDaysData();
-    })
+    // console.log(options.count)
+    console.log(options)
 
     return {
       routerJump,
@@ -334,6 +345,7 @@ export default defineComponent({
       articles,
       serverStatus,
       yiju,
+      options,
     };
   },
 });
