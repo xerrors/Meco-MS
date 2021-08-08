@@ -31,8 +31,9 @@ body::before {
   background: url("/test.png");
   background: white;
   background: linear-gradient(126deg, #daf2ff 11.89%, #eaf4ff 86.3%);
+  // background: url(https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/山水倒影简约设计4k壁纸_彼岸图网.jpg);
   // background: linear-gradient(124.51deg, #EBF8FF 11.89%, #EEF6FF 86.3%);
-  // filter: blur(64px);
+  filter: blur(64px);
   z-index: -1;
 }
 </style>

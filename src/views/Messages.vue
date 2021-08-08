@@ -2,9 +2,27 @@
   <div class="messages">
     <div class="navbar">
       <h1>消息中心</h1>
+      <div class="buttons">
+        <a-button
+          type="primary"
+          class="nav-btn"
+          :loading="data.loading"
+          @click="data.markAsReaded('all')"
+        >
+          全部已读
+        </a-button>
+        
+        <a-button
+          type="primary"
+          class="nav-btn"
+          @click="data.getMsgs"
+        >
+          <template #icon><SyncOutlined :spin="data.loading" /></template>
+        </a-button>
+      </div>
     </div>
     <div class="message-container">
-      <div class="button-list">
+      <!-- <div class="button-list">
         <div class="platforms">
           <div
             v-for="(text, ind) in btn_text"
@@ -20,8 +38,8 @@
             <template #icon><SyncOutlined :spin="data.loading" /></template>
           </a-button>
         </div>
-      </div>
-      <a-empty v-if="data.empty" style="margin: 100px" />
+      </div> -->
+      <!-- <a-empty v-if="data.empty" style="margin: 100px" /> -->
       <div v-if="data.msgs[0]" class="msg-lists">
         <div
           class="msg"
@@ -259,6 +277,16 @@ export default defineComponent({
     .readed_msg {
       filter: opacity(0.6);
       box-shadow: none;
+    }
+  }
+}
+
+.navbar {
+  .buttons {
+    margin-left: auto;
+    .nav-btn {
+      margin-left: 16px;
+      
     }
   }
 }

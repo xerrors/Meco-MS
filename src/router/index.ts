@@ -35,10 +35,15 @@ const routes = [
     name: '消息管理',
     component: () => import('../views/Messages.vue'),
   },
+  // {
+  //   path: '/server-monitor',
+  //   name: '服务器状态',
+  //   component: () => import('../views/ServerMonitor.vue'),
+  // },
   {
-    path: '/server-monitor',
-    name: '服务器状态',
-    component: () => import('../views/ServerMonitor.vue'),
+    path: '/server-log',
+    name: '服务器日志',
+    component: () => import('../views/ServerLog.vue'),
   },
   {
     path: '/edit/:path',

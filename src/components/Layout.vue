@@ -55,7 +55,7 @@ export default defineComponent({
     padding: 0 24px;
 
     /* for test */
-    height: 1000px;
+    // height: 1000px;
 
     footer {
       margin-top: auto;

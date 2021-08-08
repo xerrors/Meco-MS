@@ -8,6 +8,7 @@
       <router-link to="/dashboard"><DashboardOutlined />后台总览</router-link>
       <router-link to="/pages"><FileTextOutlined />文章管理</router-link>
       <router-link to="/messages"><CommentOutlined />消息管理</router-link>
+      <router-link to="/server-log"><DatabaseOutlined />访问日志</router-link>
     </div>
 
     <div class="logout">
@@ -87,13 +88,15 @@ export default defineComponent({
 <style lang="scss" scoped>
 .slides.round {
   --slide-margin-width: 24px;
-  width: calc(var(--slides-width) - var(--slide-margin-width));
-  height: calc(100vh - var(--slide-margin-width) * 2);
+  width: var(--slides-width);
+  height: 100vh;
+  // height: calc(100vh - var(--slide-margin-width) * 2);
+  // width: calc(var(--slides-width) - var(--slide-margin-width));
 
-  background: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.8);
   border: 2px solid #FFFFFF;
-  border-radius: 16px;
-  margin: var(--slide-margin-width);
+  border-radius: 0 16px 16px 0;
+  // margin: var(--slide-margin-width);
   
   box-sizing: border-box;
   // backdrop-filter: blur(32px);

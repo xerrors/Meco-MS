@@ -220,6 +220,11 @@ h3 {
     overflow: hidden;
     margin-bottom: 10px;
     position: relative;
+    max-width: 100%;
+    height: 120px;
+
+    display: flex;
+    justify-content: center;
 
     &:hover .poster-actions {
       opacity: 1;
@@ -227,8 +232,6 @@ h3 {
     
 
     img {
-      max-width: 100%;
-      height: auto;
       object-fit: cover;
     }
 
@@ -242,7 +245,7 @@ h3 {
       border-radius: 4px;
       font-weight: bold;
       font-size: small;
-      color: rgb(0, 0, 0);
+      color: #333;
     }
 
     .poster-actions {
@@ -250,6 +253,7 @@ h3 {
       position: absolute;
       right: 10px;
       bottom: 10px;
+      color: #333;
 
       .poster-overlay:hover {
         display: inherit;

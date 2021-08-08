@@ -109,46 +109,56 @@ export default defineComponent({
       endDate: "",
       searchKeyword: "",
 
-      filter_date: (item: any): boolean => {
-        return true;
+      filters: {
+        byDate: (item: any): boolean => {
+          return true;
+        },
+
+        bySearch: (item: any): boolean => {
+          return true;
+        },
       },
 
-      filter_search: (item: any): boolean => {
-        return true;
+      filterArticles: () => {
+        data.filted_articles = data.articles.filter(data.filters.byDate);
+        data.filted_articles = data.filted_articles.filter(data.filters.bySearch);
       },
 
       onSearch: (searchValue: string) => {
         if (searchValue) {
           const keys = searchValue.split(' ');
-          data.filter_search = (item) => {
+          data.filters.bySearch = (item) => {
+            var info_text = item.title;
+            if (data.source === 'db') {
+              info_text += item.tags.join(' ') + item.categories;
+            }
             for (var i=0;i<keys.length;i++) {
-              if (item.title.toLowerCase().search(keys[i].toLowerCase()) == -1) {
+              if (info_text.toLowerCase().search(keys[i].toLowerCase()) == -1) {
                 return false;
               }
             }
             return true;
           };
         } else {
-          data.filter_search = (): boolean => {
+          data.filters.bySearch = (): boolean => {
             return true;
           };
         }
-        
-        data.filted_articles = data.articles.filter(data.filter_search);
+        data.filterArticles();
       },
 
       onDateChange: (selectDate: Date, dateString: string) => {
         data.endDate = dateString;
         if (dateString) {
-          data.filter_date = (item) => {
+          data.filters.byDate = (item) => {
             return new Date(item.date) < new Date(dateString);
           };
         } else {
-          data.filter_date = (): boolean => {
+          data.filters.byDate = (): boolean => {
             return true;
           };
         }
-        data.filted_articles = data.articles.filter(data.filter_date);
+        data.filterArticles();
       },
 
       praseArticles: (articles, source="db"):void => {
@@ -172,7 +182,7 @@ export default defineComponent({
         });
 
         data.articles = articles;
-        data.filted_articles = articles.filter(data.filter_date);
+        data.filterArticles();
       },
 
       getData: (source: string) => {

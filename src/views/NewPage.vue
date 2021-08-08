@@ -3,7 +3,17 @@
     <div class="navbar">
       <h1>编辑文章</h1>
       <div class="nav-actions">
-        <span>更新于：{{ myEditor.update_time }}</span>
+        <div 
+          style="
+            display: inline-block;
+            border-radius: 50%;
+            background: #ccc;
+            width: 6px; height: 6px;
+            margin: 2px;"
+          v-if="status.unLoad" 
+          ></div>
+        <div style="display: inline-block" class="span-offline" v-if="status.offline">已离线</div>
+        <div style="display: inline-block" >自动保存于：{{ myEditor.update_time }}</div>
         <a-button
           @click="save_draft"
           :loading="myEditor.processing==1"
@@ -42,12 +52,12 @@
         v-model="myEditor.text"
         :disabled-menus="[]"
         mode="edit"
-        left-toolbar="undo redo clear| h bold italic strikethrough quote | ul ol table hr | link image code | save template"
+        left-toolbar="undo redo | table hr | link image code | save template"
         autofocus
         right-toolbar="preview toc sync-scroll fullscreen"
         @upload-image="handleUploadImage"
         @save="handleSave"
-        @change="handleChange"
+        @change="myEditor.handleChange"
         :toolbar="toolbar"
       ></v-md-editor>
     <!-- 右侧抽屉弹窗 -->
@@ -83,6 +93,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import { useClipboard } from "@vueuse/core";
 import { usePermission } from '@vueuse/core'
+import { resolve } from "node:dns";
 
 export default defineComponent({
   name: "NewPage",
@@ -139,6 +150,12 @@ export default defineComponent({
 
     const btnStatus = ref("发布");
 
+    const status = reactive({
+      offline: false,
+      btn: "发布",
+      unLoad: false,
+    })
+
     // myEditor 对象
     const myEditor = reactive({
       text: templates['default'],
@@ -147,8 +164,14 @@ export default defineComponent({
       processing: 0,
       update_time: 'none',
 
-      resetContent: (text) => {
+      resetContent: (text:string) => {
         myEditor.text = text;
+      },
+      
+      handleChange: (text: string, html: string) => {
+        // console.log(text)
+        // localStorage.draft = text;
+        status.unLoad = customHash(myEditor.text) != myEditor.hash;
       },
     });
 
@@ -230,7 +253,7 @@ export default defineComponent({
     }
 
     // 上传
-    function upload(revision:boolean, compile: boolean) {
+    function upload(revision:boolean, compile: boolean, need: boolean=false) {
       if (compile) {
         btnStatus.value = "上传中";
         myEditor.loading = true;
@@ -247,18 +270,22 @@ export default defineComponent({
           },
           params: {
             path: route.params.path,
-            revision: revision ? 1 : 0
+            revision: revision ? 1 : 0,
+            need: need ? 1 : 0,
           },
         })
           .then((res) => {
             praseUploadRes(res.data, revision, compile);
             myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
             myEditor.hash = customHash(myEditor.text)
+            status.offline = false;
+            status.unLoad = false;
             resolve(res);
           })
           .catch((err) => {
             message.error("there is something wrong")
             myEditor.processing = 0;
+            status.offline = true;
             reject(err);
           });
       });
@@ -275,6 +302,7 @@ export default defineComponent({
             btnStatus.value = "发布";
             myEditor.processing = 0;
             myEditor.loading = false;
+            status.offline = false;
             resolve(res);
           })
           .catch((err) => {
@@ -305,7 +333,10 @@ export default defineComponent({
             } else {
               message.success({ content: "从本地新建~", key })
             }
+            
+            myEditor.hash = customHash(myEditor.text)
             myEditor.loading = false;
+            status.offline = false;
             resolve(res);
           })
           .catch((err) => {
@@ -372,10 +403,28 @@ export default defineComponent({
     }
 
     function save_draft() {
-      myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
-      if (customHash(myEditor.text) != myEditor.hash) {
+      if (!Boolean(status.offline)) {
+        myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
+      }
+      if (status.unLoad) {
         myEditor.processing = 1
         upload(false, false)
+      }
+      else {
+        new Promise((resolve, reject) => {
+          request({
+            url: "/api/admin/test-connect",
+            method: "get",
+          })
+          .then((res) => {
+            status.offline = false;
+            resolve(res);
+          })
+          .catch((err) => {
+            status.offline = true;
+            reject(err)
+          })
+        })
       }
     }
 
@@ -414,6 +463,7 @@ export default defineComponent({
 
     return {
       myEditor,
+      status,
       toolbar,
       btnStatus,
       transmit,
@@ -460,10 +510,6 @@ export default defineComponent({
     handleSave(text: string, html: string) {
       this.save_draft();
     },
-    handleChange(text: string, html: string) {
-      // console.log(text)
-      // localStorage.draft = text;
-    },
 
     onOpenNewPage(link: string): void {
       window.open(link);
@@ -496,6 +542,15 @@ export default defineComponent({
 
     border: 2px solid white;
   }
+
+  .span-offline {
+    background: rgb(214, 65, 65);
+    border-radius: 8px;
+    border: 2px solid white;
+    color: white;
+    padding: 2px 8px;
+    box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
+  }
 }
 
 .drawer {
@@ -515,6 +570,11 @@ export default defineComponent({
   border: 2px solid white;
   box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
   overflow: hidden;
+
+  textarea {
+    font-size: 11pt;
+    line-height: 1.7;
+  }
 
   &__toolbar {
     position: sticky;

@@ -10,21 +10,21 @@
         开始写作
       </a-button>
     </div>
-    <div class="main-container">
+    <div class="main-container color-block">
       <div class="block spc8 spr2 data-charts">
         <h3>数据表现</h3>
-        <v-chart class="chart" :option="options.count" />
+        <v-chart class="chart" :option="options.count" autoresize/>
       </div>
       <div class="block spc4 yiju">
         <h3 class="yiju__date">{{ yiju.date }}</h3>
         <div class="yiju__content hide-scrollbar">{{ yiju.content }}</div>
         <span class="yiju__origin">来自：{{ yiju.origin }}</span>
       </div>
-      <div class="block spc4 spr3">
+      <div class="block spc4 spr3 poster-card">
         <Poster ></Poster>
       </div>
 
-      <div class="block spc4 spr3">
+      <div class="block spc4 spr3 pv-order">
         <h3>阅读量文章排行</h3>
         <div class="pv-order-list hide-scrollbar">
           <div v-for="(a, ind) in articles" :key="ind" class="list-item">
@@ -37,64 +37,43 @@
         </div>
       </div>
 
-      <div class="block spc4">
-        <h3>全部数据</h3>
+      <div class="block spc4 pvdata all">
+        <div class="pvdata-header">
+          <h3>详细数据</h3>
+          <a-switch 
+            v-model:checked="countAll.viewMonth" 
+            size="small"
+          ></a-switch>
+        </div>
         <div class="count-block">
           <div class="tiny-block" style="margin-left: 0">
             <div>{{ countAll.all.pv }}</div>
+            <span class="pvdata__add" v-if="countAll.viewMonth">30日+{{ countAll.month.pv ? countAll.month.pv : 0  }}</span>
+            <span class="pvdata__add" v-else>昨日+{{ countAll.day.pv ? countAll.day.pv : 0  }}</span>
             <h4>访问量</h4>
           </div>
           <div class="tiny-block">
             <div>{{ countAll.all.like }}</div>
+            <span class="pvdata__add" v-if="countAll.viewMonth">30日+{{ countAll.month.like ? countAll.month.like : 0  }}</span>
+            <span class="pvdata__add" v-else>昨日+{{ countAll.day.like ? countAll.day.like : 0  }}</span>
             <h4>点赞数</h4>
           </div>
           <div class="tiny-block" style="margin-right: 0">
             <div>{{ countAll.all.comment }}</div>
-            <h4>评论数</h4>
-          </div>
-        </div>
-      </div>
-      <div class="block spc4">
-        <h3>昨日数据</h3>
-        <div class="count-block">
-          <div class="tiny-block" style="margin-left: 0">
-            <div>{{ countAll.day.pv }}</div>
-            <h4>访问量</h4>
-          </div>
-          <div class="tiny-block">
-            <div>{{ countAll.day.like }}</div>
-            <h4>点赞数</h4>
-          </div>
-          <div class="tiny-block" style="margin-right: 0">
-            <div>{{ countAll.day.comment }}</div>
-            <h4>评论数</h4>
-          </div>
-        </div>
-      </div>
-      <div class="block spc4">
-        <h3>过去 30 天数据</h3>
-        <div class="count-block">
-          <div class="tiny-block" style="margin-left: 0">
-            <div>{{ countAll.month.pv }}</div>
-            <h4>访问量</h4>
-          </div>
-          <div class="tiny-block">
-            <div>{{ countAll.month.like }}</div>
-            <h4>点赞数</h4>
-          </div>
-          <div class="tiny-block" style="margin-right: 0">
-            <div>{{ countAll.month.comment }}</div>
+            <span class="pvdata__add" v-if="countAll.viewMonth">30日+{{ countAll.month.comment ? countAll.month.comment : 0  }}</span>
+            <span class="pvdata__add" v-else>昨日+{{ countAll.day.comment ? countAll.day.comment : 0  }}</span>
             <h4>评论数</h4>
           </div>
         </div>
       </div>
 
-      <!-- <div class="block spc4 spr2">8</div>
-      <div class="block spc4 spr2">9</div> -->
-      <!-- <div class="block spc2"></div>
-      <div class="block spc2"></div> -->
-      <div class="block spc2"><v-chart class="chart" :option="options.cpu" /></div>
-      <div class="block spc2"><v-chart class="chart" :option="options.mem" /></div>
+      <div class="block spc4 spr2 quicklink">
+        <QuickLink></QuickLink>
+      </div>
+      <!-- <div class="block spc4 spr2">9</div> -->
+
+      <div class="block spc2 pie-charts cpu"><v-chart class="chart" :option="options.cpu" autoresize/></div>
+      <div class="block spc2 pie-charts mem"><v-chart class="chart" :option="options.mem" autoresize/></div>
     </div>
   </div>
 </template>
@@ -105,6 +84,7 @@ import { useRouter } from "vue-router";
 import { joinPath, parseTime } from "../utils/format";
 
 import Poster from '../components/Poster.vue';
+import QuickLink from '../components/QuickLink.vue';
 
 import request from "../utils/request";
 
@@ -137,6 +117,7 @@ export default defineComponent({
   name: "dashboard",
   components: {
     Poster,
+    QuickLink,
     VChart,
   },
   provide: {
@@ -166,11 +147,13 @@ export default defineComponent({
       origin: "",
       date: parseTime(new Date(), '{y}年{m}月{d}日')
     })
+
     const countAll = ref({
       all: { pv: 0, like: 0, comment: 0 },
       day: { pv: 0, like: 0, comment: 0 },
       week: { pv: 0, like: 0, comment: 0 },
-      month: { pv: 0, like: 0, comment: 0 }
+      month: { pv: 0, like: 0, comment: 0 },
+      viewMonth: false
     });
 
     function getCount() {
@@ -353,15 +336,27 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .main-container > .block {
-  background: rgba(255, 255, 255, 0.6);
-  border: 2px solid #ffffff;
   box-sizing: border-box;
   // backdrop-filter: blur(32px);
-  box-shadow: 0px 0px 10px 4px rgb(44 123 255 / 5%);
+  box-shadow: 1px 1px 14px 4px rgb(44 123 255 / 5%);
   /* Note: backdrop-filter has minimal browser support */
+  backdrop-filter: blur(64px);
 
   border-radius: 16px;
   padding: 0.75rem 1rem;
+
+  max-width: 100%;
+
+  h3 {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 0;
+  }
+}
+
+.main-container:not(.color-block) > .block {
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid #ffffff;
 }
 
 /* Grid Layout */
@@ -389,14 +384,13 @@ export default defineComponent({
   grid-template-columns: repeat(12, 1fr);
 }
 
-.block {
-  max-width: 100%;
-}
-
-.block > h3 {
-  font-size: 16px;
-  font-weight: bold;
-  margin-bottom: 0;
+.pvdata {
+  .pvdata-header {
+    display: flex;
+    h3 { margin: 0;}
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 .count-block {
@@ -405,9 +399,9 @@ export default defineComponent({
   // justify-content: space-between;
   height: auto;
 
-  .tiny-block {
-    margin-top: 10px;
-  }
+  // .tiny-block {
+  //   margin-top: 10px;
+  // }
 
   > * {
     // background: white;
@@ -422,8 +416,22 @@ export default defineComponent({
       font-size: 1.6rem;
       font-family: initial;
       color: #0b76da;
-      line-height: 2;
+      line-height: 1;
+      font-weight: 600;
+      margin-top: 16px;
       text-align: center;
+    }
+
+    > span {
+      margin: 4px auto;
+      margin-bottom: 8px;
+      width: fit-content;
+      display: block;
+      text-align: center;
+      background: #cce5ff;
+      border-radius: 4px;
+      padding: 0px 6px;
+      font-size: 0.75rem;
     }
 
     > h4 {
@@ -450,9 +458,8 @@ export default defineComponent({
     color: red;
   }
 
-
   .list-item {
-    height: 36px;
+    height: 40px;
     width: 100%;
     display: flex;
     // justify-content: center;
@@ -505,10 +512,11 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  
 
   &__date {
     // color: #0b76da;
-    line-height: 1.2;
+    line-height: 1.4;
     border-left: 4px solid #0b76da;
     padding-left: 0.6rem;
   }
@@ -527,6 +535,20 @@ export default defineComponent({
     font-size: small;
     color: var(--text-color-secondary);
   }
+}
+
+.main-container.color-block {
+  & > .block {
+    // border: none;
+    border: 1px solid rgb(44 123 255 / 10%);
+    background: linear-gradient(170deg, #fbfeff, #e9f9ff);
+  }
+  .data-charts { background-image: linear-gradient(170deg, hsl(212deg 100% 99%), hsl(212deg 100% 95%));}
+
+  .yiju { background-image: linear-gradient(153deg, #fafeff, #e5fbff);}
+  .pvdata { background-image: linear-gradient(170deg, hsl(160deg 100% 99%), hsl(160deg 100% 96%)); }
+  .pie-charts.cpu { background-image: linear-gradient(153deg, #fafcff, #e5f2ff); }
+  .pie-charts.mem { background-image: linear-gradient(153deg, #fffbfa, #ffebe5); }
 }
 
 // 大于 1700px 的
