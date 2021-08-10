@@ -47,7 +47,7 @@
       </div>
     </div>
     <!-- config: https://code-farmer-i.github.io/vue-markdown-editor/zh/ -->
-    <a-spin :spinning="myEditor.loading">
+    <a-spin :spinning="false">
       <v-md-editor
         v-model="myEditor.text"
         :disabled-menus="[]"
@@ -260,7 +260,7 @@ export default defineComponent({
       }
 
       // 保存源文件
-      new Promise((resolve, reject): void => {
+      new Promise((resolve, reject) => {
         request({
           url: "/api/admin/articles/md_source",
           method: "post",
@@ -292,7 +292,7 @@ export default defineComponent({
     }
 
     function compile_md() {
-      new Promise((resolve, reject): void => {
+      new Promise((resolve, reject) => {
         request({
           url: "/api/admin/deploy-vuepress",
           method: "get",
@@ -308,6 +308,7 @@ export default defineComponent({
           .catch((err) => {
             message.error("there is something wrong")
             myEditor.processing = 0;
+            myEditor.loading = false;
             reject(err);
           });
       });
@@ -318,7 +319,7 @@ export default defineComponent({
       myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
       const key: string = "load_data";
       message.loading({ content: "正在向服务器获取数据……", key });
-      new Promise((resolve, reject): void => {
+      new Promise((resolve, reject) => {
         request({
           url: "/api/admin/articles/md_source",
           method: "get",
@@ -327,6 +328,7 @@ export default defineComponent({
           },
         })
           .then((res) => {
+            myEditor.loading = false;
             if (res.data.data) {
               myEditor.text = res.data.data;
               message.success({ content: "加载成功~", key });
@@ -335,13 +337,12 @@ export default defineComponent({
             }
             
             myEditor.hash = customHash(myEditor.text)
-            myEditor.loading = false;
             status.offline = false;
             resolve(res);
           })
           .catch((err) => {
-            message.error({ content: "所访问的资源不存在", key });
             myEditor.loading = false;
+            message.error({ content: "所访问的资源不存在", key });
             router.push("/edit/draft");
             reject(err);
           });
@@ -478,7 +479,7 @@ export default defineComponent({
       // console.log(files);
       this.myEditor.loading = true;
 
-      new Promise((resolve, reject):void => {
+      new Promise((resolve, reject) => {
         request({
           url: "/api/admin/post-image",
           method: "post",
@@ -502,6 +503,7 @@ export default defineComponent({
           resolve(res)
         })
         .catch(err => {
+          this.myEditor.loading = false;
           reject(err)
         })
       })

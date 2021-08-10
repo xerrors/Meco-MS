@@ -1,7 +1,8 @@
 <template>
   <div class="slides round">
     <div class="logo">
-      MECO
+      <!-- MECO -->
+      <img src="https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/test.png" alt="Meco" style="object-fit: contain;">
     </div>
 
     <div class="button-panel">
@@ -9,6 +10,8 @@
       <router-link to="/pages"><FileTextOutlined />文章管理</router-link>
       <router-link to="/messages"><CommentOutlined />消息管理</router-link>
       <router-link to="/server-log"><DatabaseOutlined />访问日志</router-link>
+      <router-link to="/search"><SearchOutlined />全局搜索</router-link>
+      <router-link to="/test-page"><ExperimentOutlined />测试页面</router-link>
     </div>
 
     <div class="logout">
@@ -27,7 +30,15 @@
 </template>
 
 <script lang="ts">
-import { DashboardOutlined, FileTextOutlined, CommentOutlined, DatabaseOutlined, ImportOutlined } from '@ant-design/icons-vue';
+import {
+  DashboardOutlined,
+  FileTextOutlined,
+  CommentOutlined,
+  DatabaseOutlined,
+  ImportOutlined,
+  SearchOutlined,
+  ExperimentOutlined,
+} from '@ant-design/icons-vue';
 import { defineComponent, reactive, ref } from 'vue'
 import Cookies from 'js-cookie';
 import request from '../utils/request';
@@ -41,6 +52,8 @@ export default defineComponent({
     DatabaseOutlined,
     CommentOutlined,
     ImportOutlined,
+    SearchOutlined,
+    ExperimentOutlined,
   },
   setup() {
     let router = useRouter();
@@ -131,7 +144,7 @@ export default defineComponent({
     font-weight: bold;
     color: #333;
 
-    height: 50px;
+    height: 60px;
   }
 
   .button-panel {
@@ -141,7 +154,7 @@ export default defineComponent({
 
     height: auto;
 
-    margin-top: 50px;
+    margin-top: 30px;
 
     a {
       display: flex;
@@ -149,7 +162,7 @@ export default defineComponent({
       gap: 8px;
 
       border-radius: 8px;
-      margin: 24px;
+      margin: 20px;
       padding: 8px 28px;
 
       color: #333;
