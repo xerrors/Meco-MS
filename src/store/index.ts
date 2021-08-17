@@ -1,25 +1,30 @@
-import { createStore } from "vuex";
+import { createStore } from 'vuex'
+
+export interface Bookmark {
+  title: string,
+  path: string,
+}
 
 export default createStore({
-  state() {
+  state () {
     return {
-      logged: true,
-    };
-  },
-  mutations: {
-    login(state) {
-      state.logged = true;
-    },
-    logout(state) {
-      state.logged = false
+      marks: [] as Bookmark[]
     }
   },
-  actions: {
-    login(context) {
-      context.commit("login");
+  mutations: {
+    addBookmark (state, mark:Bookmark) {
+      if (!Boolean(state.marks.find((item:Bookmark) => {return item.path == mark.path}))) {
+        state.marks.push(mark);
+      }
     },
-    logout(context) {
-      context.commit("logout");
-    },
-  },
-});
+    delBookmark (state, path:string) {
+      // arr.splice(arr.findIndex(e => e.id === 1), 1)
+      const index = state.marks.findIndex((item:Bookmark) => {return item.path == path})
+      if (index != -1) {
+        state.marks.splice(index, 1)
+      }
+      
+    }
+  }
+})
+

@@ -102,7 +102,8 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .search-comp {
-  width: 900px;
+  max-width: 900px;
+  min-width: 400px;
   margin: 0 auto;
 
   h1 {

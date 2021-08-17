@@ -1,8 +1,8 @@
 // import { join } from "path"
 
-export function parseTime(time: Date, cFormat?: any) {
+export function parseTime(time: Date, cFormat?: any): string {
     if (arguments.length === 0) {
-        return null
+        return "";
     }
     const format = cFormat || '{y}-{m}-{d} {h}:{i}:{s}'
     let date: Date = time;

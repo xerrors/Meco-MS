@@ -64,13 +64,25 @@ export default defineComponent({
           title: "开源项目",
           link: "https://github.com/Xerrors",
           domain: "GitHub",
-          color: "hsl(200deg 25% 40%)"
+          color: "hsl(200deg 40% 40%)"
         },
         {
           title: "滴答清单",
           link: "https://dida365.com/webapp/",
           domain: "DiDa",
-          color: "hsl(170deg 20% 40%)"
+          color: "hsl(170deg 40% 40%)"
+        },
+        {
+          title: "卖萌屋学术",
+          link: "https://arxiv.xixiaoyao.cn/trend",
+          domain: "XiXiaoYao",
+          color: "hsl(248deg 40% 40%)"
+        },
+        {
+          title: "阿里云",
+          link: "https://swas.console.aliyun.com/?spm=5176.12818093.ProductAndService--ali--widget-home-product-recent.dre0.420816d0KlPNww#/server/fe0c079f181f4e22b129b2f215cf632f/cn-hangzhou/dashboard",
+          domain: "Aliyun",
+          color: "hsl(25deg 80% 40%)"
         },
       ]
     });

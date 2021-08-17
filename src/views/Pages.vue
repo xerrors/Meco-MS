@@ -196,7 +196,7 @@ export default defineComponent({
           }).then((res) => {
             data.praseArticles(res.data.data);              
             data.loading = false;
-            message.success("加载完成");
+            // message.success("加载完成");
             resolve(res);
           }).catch((err) => {
             reject(err);
@@ -304,7 +304,7 @@ export default defineComponent({
 <style lang="scss" scoped>
 .pages {
   padding: 8px 0px;
-  background: rgba(250, 253, 255, 0.8);
+  background: rgba(255, 255, 255, 0.8);
   border-radius: 16px;
   min-height: 300px;
   border: 2px solid white;

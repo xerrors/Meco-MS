@@ -14,6 +14,16 @@
       <router-link to="/test-page"><ExperimentOutlined />测试页面</router-link>
     </div>
 
+    <div class="bookmarks">
+      <div class="bookmark"
+        v-for="(mark, ind) in marks"
+        :key="ind" 
+        @click.right="removeBookmark($event, mark.path)"
+      >
+        <router-link :to="'/edit/'+mark.path">{{ mark.title }}</router-link>
+      </div>
+    </div>
+
     <div class="logout">
       <button @click="logoutObj.showModal"><ImportOutlined />退出登录</button>
       <a-modal
@@ -38,12 +48,14 @@ import {
   ImportOutlined,
   SearchOutlined,
   ExperimentOutlined,
+  CloseOutlined,
 } from '@ant-design/icons-vue';
 import { defineComponent, reactive, ref } from 'vue'
 import Cookies from 'js-cookie';
 import request from '../utils/request';
 
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 import { message } from 'ant-design-vue';
 export default defineComponent({
   components: {
@@ -54,9 +66,12 @@ export default defineComponent({
     ImportOutlined,
     SearchOutlined,
     ExperimentOutlined,
+    CloseOutlined,
   },
   setup() {
     let router = useRouter();
+    let store = useStore();
+    let marks = store.state.marks;
 
     let logoutObj = reactive({
       visible: false,
@@ -91,8 +106,15 @@ export default defineComponent({
       }
     })
 
+    let removeBookmark = (e:Event, path:string) => {
+      store.commit("delBookmark", path)
+      e.preventDefault()
+    }
+
     return {
       logoutObj,
+      marks,
+      removeBookmark,
     }
   }
 });
@@ -130,7 +152,7 @@ export default defineComponent({
 
   background: white;
 
-  padding: 60px 0;
+  padding: 8px 0 16px 0;
   
   .logo, .button-panel {
     width: 200px;
@@ -154,7 +176,7 @@ export default defineComponent({
 
     height: auto;
 
-    margin-top: 30px;
+    margin-top: 16px;
 
     a {
       display: flex;
@@ -162,8 +184,8 @@ export default defineComponent({
       gap: 8px;
 
       border-radius: 8px;
-      margin: 20px;
-      padding: 8px 28px;
+      margin: 10px;
+      padding: 8px 16px;
 
       color: #333;
       font-weight: bold;
@@ -182,13 +204,13 @@ export default defineComponent({
     }
 
     .router-link-active {
-      background: #333;
+      background: var(--primary-color);
       color: white;
     }
   }
 
   .logout {
-    margin-top: auto;
+    margin-top: 40px;
     margin-bottom: 0;
 
     button {
@@ -209,6 +231,32 @@ export default defineComponent({
         background: #f0f2fa;
       }
 
+    }
+  }
+}
+
+.bookmarks {
+  margin-top: auto;
+  width: 80%;
+  .bookmark {
+    // word-brack: keepall;
+    overflow: hidden;
+    position: relative;
+
+    background: white;
+    box-shadow: 1px 1px 10px 2px rgba(0,0,0,0.05);
+    margin: 16px 0;
+    padding: 6px 12px;
+    border: 2px solid white;
+    border-radius: 8px;
+    height: 40px;
+
+    & > a {
+      width: 100%;
+      overflow: hidden;
+      display: block;
+      white-space: nowrap;
+      color: #333;
     }
   }
 }

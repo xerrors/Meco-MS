@@ -1,8 +1,68 @@
 <template>
   <div class="edit">
     <div class="navbar">
-      <h1>编辑文章</h1>
-      <div class="nav-actions">
+      <div class="nav-actions-left">
+        <a-button
+          class="nav-btn back"
+          @click="routerBack"
+        >
+          <template #icon><LeftOutlined /></template>
+        </a-button>
+        <a-button
+          class="nav-btn mark"
+          @click="saveAsMark"
+        >
+          <template #icon><FolderAddOutlined /></template>
+        </a-button>
+        <div style="display: inline-block">
+          <a-input 
+            id="pasteInput"
+            v-model:value="data.url"
+            class="url-input"
+            @focus="selectText"
+            placeholder="点击这里粘贴图片"
+            style="width: 160px;"
+            ></a-input>
+        </div>
+        <a-button
+          class="nav-btn"
+          @click="activeToolbarItem('outline')"
+        >
+          <template #icon><AlignLeftOutlined /></template>
+        </a-button>
+        <a-button
+          class="nav-btn"
+          @click="activeToolbarItem('upload')"
+        >
+          <template #icon><CloudUploadOutlined /></template>
+        </a-button>
+        <a-button
+          class="nav-btn"
+          @click="vditor.setValue(data.templates['weekpost'])"
+        >
+          <template #icon><FileTextOutlined /></template>
+        </a-button>
+        <a-button
+          class="nav-btn"
+          @click="vditor.setValue(data.templates['default'])"
+        >
+          <template #icon><RestOutlined /></template>
+        </a-button>
+        <a-button
+          class="nav-btn"
+          @click="activeToolbarItem('fullscreen')"
+        >
+          <template #icon><ExpandOutlined /></template>
+        </a-button>
+        <a-button
+          class="nav-btn"
+          @click="toggleToolbar(!data.toolbar)"
+        >
+          <template #icon><EllipsisOutlined /></template>
+        </a-button>
+      </div>
+      <div class="nav-actions-right">
+        <div style="display: inline-block; opacity: 0.5;">{{ status.step_text[status.step] }}</div>
         <div 
           style="
             display: inline-block;
@@ -10,211 +70,254 @@
             background: #ccc;
             width: 6px; height: 6px;
             margin: 2px;"
-          v-if="status.unLoad" 
+          v-if="status.draft" 
           ></div>
-        <div style="display: inline-block" class="span-offline" v-if="status.offline">已离线</div>
-        <div style="display: inline-block" >自动保存于：{{ myEditor.update_time }}</div>
-        <a-button
-          @click="save_draft"
-          :loading="myEditor.processing==1"
-          :disabled="myEditor.processing!=0 && myEditor.processing!=1"
-          >存为草稿</a-button
-        >
+        <div style="display: inline-block" class="span-offline" v-if="!online">已离线</div>
         <a-button
           @click="revision"
-          :loading="myEditor.processing==2"
-          :disabled="myEditor.processing!=0 && myEditor.processing!=2"
-          >保存修订</a-button
+          :loading="status.step==2"
+          :disabled="status.step!=0"
+          class="nav-btn"
+          >存档</a-button
         >
-        <a-dropdown-button
+        <a-button
           type="primary"
           @click="save_and_compile"
-          :disabled="myEditor.processing!=0"
+          :loading="status.step==3"
+          :disabled="status.step!=0"
+          class="nav-btn"
+          >发布</a-button
         >
-          {{ btnStatus }}
-          <template #overlay>
-            <a-menu @click="transmit.handleClick">
-              <a-menu-item key="https://mp.csdn.net/editor/html">
-                转 CSDN
-              </a-menu-item>
-              <a-menu-item key="https://juejin.cn/editor/drafts/new"> 转 掘金 </a-menu-item>
-              <a-menu-item key="https://www.jianshu.com/writer#/">
-                转 简书
-              </a-menu-item>
-            </a-menu>
-          </template>
-        </a-dropdown-button>
       </div>
     </div>
-    <!-- config: https://code-farmer-i.github.io/vue-markdown-editor/zh/ -->
-    <a-spin :spinning="false">
-      <v-md-editor
-        v-model="myEditor.text"
-        :disabled-menus="[]"
-        mode="edit"
-        left-toolbar="undo redo | table hr | link image code | save template"
-        autofocus
-        right-toolbar="preview toc sync-scroll fullscreen"
-        @upload-image="handleUploadImage"
-        @save="handleSave"
-        @change="myEditor.handleChange"
-        :toolbar="toolbar"
-      ></v-md-editor>
-    <!-- 右侧抽屉弹窗 -->
-    </a-spin>
-    <a-drawer
-      title="请手动复制以下内容"
-      placement="right"
-      v-model:visible="transmit.show"
-      width="520"
-      class="drawer"
-    >
-      <a-textarea
-        class="drawer__textarea"
-        @focus="selectText"
-        v-model:value="transmit.text"
-        placeholder="Autosize height with minimum and maximum number of lines"
-        :autoSize="{maxRows: 20}"
-        style="margin-bottom: 20px;"
-      />
-      <a-button style="margin-right: 8px; margin-top: 16px;" @click="transmit.show=false">取消</a-button>
-      <a-button type="primary" style="margin-top: 16px;" :href="transmit.target" target="_blank">跳转</a-button>
-    </a-drawer>
+    <div class="editor">
+      <div id="vditor"></div>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, reactive, onMounted, ref, onBeforeUnmount } from "vue";
-import request from "../utils/request";
-import { formatTime, parseTime } from "../utils/format";
-import { message } from "ant-design-vue";
-
+import { message, notification } from "ant-design-vue";
+import { computed, defineComponent, onBeforeUnmount, onMounted, onUpdated, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
-
-import { useClipboard } from "@vueuse/core";
+import { parseTime } from "../utils/format";
+import { parseTemplates, praseText, Item } from "../utils/newpage";
+import { useClipboard, useOnline  } from "@vueuse/core";
 import { usePermission } from '@vueuse/core'
-import { resolve } from "node:dns";
+import { useStore } from "vuex"
+
+import request from "../utils/request";
+import PasteImage from "../utils/PasteImage"
+import Vditor from 'vditor';
+
+import {
+  SaveOutlined,
+  LeftOutlined,
+  FolderAddOutlined,
+  RestOutlined,
+  ExpandOutlined,
+  FileTextOutlined,
+  CloudUploadOutlined,
+  ExportOutlined,
+  AlignLeftOutlined,
+  EllipsisOutlined,
+} from '@ant-design/icons-vue';
+import { customHash } from "../utils/func";
 
 export default defineComponent({
-  name: "NewPage",
+  name: "server",
+  components: {
+    SaveOutlined,
+    LeftOutlined,
+    FolderAddOutlined,
+    RestOutlined,
+    ExpandOutlined,
+    FileTextOutlined,
+    CloudUploadOutlined,
+    ExportOutlined,
+    AlignLeftOutlined,
+    EllipsisOutlined,
+  },
   setup() {
-    const date: string = parseTime(new Date());
+    
+    const route = useRoute();
+    const router = useRouter();
+    const store = useStore();
 
-    const items = {
-      title: "",
-      date: parseTime(new Date()),
-      permalink: "/draft/",
-      cover: "",
-      tags: [],
-      categories: "" 
+    let localTimer1:NodeJS.Timeout;
+    let localTimer2:NodeJS.Timeout;
+    let routerJump = (path: string): void => {
+      router.push(path);
+    };
+
+    let routerBack = () => {
+      store.commit("delBookmark", route.params.path)
+      router.go(-1);
     }
 
-    const weekPostItems = {
-      title: "",
-      date: parseTime(new Date()),
-      permalink: "/" + parseTime(new Date(), "{y}-{m}-{d}") +"-week-post/",
-      cover: "https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210430165756-image.png",
-      tags: ["周报"],
-      categories: "周报",
-      abstract: "摘要"
+    let saveAsMark = () => {
+      store.commit("addBookmark", {
+        title: data.md.title,
+        path: route.params.path
+      })
+      // console.log(store.state.marks);
+      router.go(-1);
     }
 
-    const parseItems = (items) => {
-      var text: string = "---\n"
-      for (var i in items) {
-        if (typeof(items[i]) == "string") {
-          text += i + ": " + items[i] + "\n";
-        } else {
-          text += i + ": " + "\n- ";
-          text += items[i].join("\n- ")
-          text += "\n"
-        }
+    let activeToolbarItem = (item:string, i:number|null):void => {
+      // 对于存在下来菜单的还不知道怎么实现
+      const elem = vditor.io.vditor.toolbar.elements[item];
+      // elem.firstElementChild.dispatchEvent(new CustomEvent('click'))
+
+      if (item=='fullscreen') {
+        toggleToolbar(true);
       }
-      text += "\n---\n"
 
-      console.log(text)
-      return text
+      if (i != null) {
+        elem.firstElementChild.dispatchEvent(new CustomEvent('click'))
+        elem.querySelectorAll('button')[i].dispatchEvent(new CustomEvent("click"))
+      } else{
+        elem.firstElementChild.dispatchEvent(new CustomEvent('click'))
+      }
     }
 
-    const templates = {
-      "default": parseItems(items),
-      "weekpost": parseItems(weekPostItems)
+    let toggleToolbar = (s:boolean) => {
+      console.log("hidden")
+      var ele = document.getElementsByClassName("vditor-toolbar")[0];
+      if (s && data.toolbar==false) {
+        ele.classList.remove('hidden')
+        data.toolbar = true;
+      } else {
+        ele.classList.add('hidden');
+        data.toolbar = false;
+      }
     }
 
-    // console.log(templates);
 
-    let route = useRoute();
-    let router = useRouter();
-
-    let localTimer: NodeJS.Timeout;
-
-    const btnStatus = ref("发布");
-
-    const status = reactive({
-      offline: false,
-      btn: "发布",
-      unLoad: false,
+    const data = reactive({
+      url: "",
+      templates: parseTemplates(),
+      toolbar: false,
+      md: {} as Item,
     })
 
-    // myEditor 对象
-    const myEditor = reactive({
-      text: templates['default'],
-      loading: true,
-      hash: 0,
-      processing: 0,
-      update_time: 'none',
+    const online = useOnline();
 
-      resetContent: (text:string) => {
-        myEditor.text = text;
-      },
-      
-      handleChange: (text: string, html: string) => {
-        // console.log(text)
-        // localStorage.draft = text;
-        status.unLoad = customHash(myEditor.text) != myEditor.hash;
-      },
-    });
+    const status = reactive({
+      step_text: ["", "保存中", "修订中", "编译中", "上传中", "加载中", "服务端错误"] as String[],
+      step: 0 as Number,
+      hash: 0 as Number,
+      draft: false,
+    })
 
-    const toolbar = reactive({
-      clear: {
-        icon: "v-md-icon-clear",
-        title: "重置内容",
-        action(editor: any) {
-          myEditor.resetContent(templates['default']);
-          localStorage.removeItem(String(route.params.path));
-        },
+    const vditor = reactive({
+      io: null as null | Vditor,
+      updateTime: "",
+      setValue: (value:string) => {
+        if (vditor.io) {
+          vditor.io.setValue(value);
+        }
       },
-      template: {
-        title: "使用模板",
-        icon: "v-md-icon-tip",
-        menus: [
-          {
-            name: "默认",
-            text: "默认模板",
-            action() {
-              myEditor.resetContent(templates['default']);
-            }
-          }, 
-          {
-            name: "周报",
-            text: "周报模板",
-            action() {
-              myEditor.resetContent(templates['weekpost']);
-            }
+      getValue: ():string => {
+        if (vditor.io) {
+          return vditor.io.getValue();
+        } else {
+          return "";
+        }
+      },
+      handleChange: (text: string) => {
+        if (vditor.io) {
+          status.draft = customHash(vditor.io.getValue()) != status.hash;
+        }
+      },
+      handleUploadImage: () => {},
+      handleReset: () => {},
+      handleSave: save_draft,
+    })
+
+    const initVditor = (path:string|string[]) => {
+      vditor.io = new Vditor("vditor", {
+        value: data.templates["default"],
+        upload: {
+          accept: 'image/*',
+          filename (name) {
+            return name.replace(/\?|\\|\/|:|\||<|>|\*|\[|\]|\s+/g, '-');
+          },
+          handler: (files:File[]):string => {
+            status.step = 4;
+            console.log(files);
+            upLoadImage(files[0]);
+            return String(files[0].name);
           }
-        ]
-      }
-    });
+        },
+        toolbarConfig: {
+          pin: true,
+        },
+        cache: {
+          enable: false,
+        },
+        preview: {
+          hljs: {
+            lineNumber: true,
+          }
+        },
+        input: vditor.handleChange,
+        after: () => {
+          toggleToolbar(false);
+          loadData(path).then(() => {
+            status.step = 0;
+            vditor.io && vditor.io.enable();
+            localTimer1 = setInterval(() => { save_draft(true) }, 1000);
+            localTimer2 = setInterval( test_connection, 20000);
+          })
+        }
+      });
+    }
 
+    // 从服务器加载数据
+    const loadData = (path:string|string[]) => {
+      status.step = 5;
+      vditor.io?.disabled();
+      vditor.updateTime = parseTime(new Date(), '{h}:{i}:{s}')
+      return new Promise((resolve, reject) => {
+        request({
+          url: "/api/admin/articles/md_source",
+          method: "get",
+          params: {
+            path: path,
+            // path: "ner-beginner-note",
+          },
+        })
+          .then((res) => {
+            if (res.data.data) {
+              vditor.setValue(res.data.data)
+              data.md = res.data.md;
+            } else {
+              vditor.setValue(data.templates["default"])
+              message.success({ content: "从本地新建~" })
+            }
+            status.hash = customHash(res.data.data);
+            resolve(res);
+          })
+          .catch((err) => {
+            message.error({ content: "所访问的资源不存在" });
+            router.push("/edit/draft");
+            reject(err);
+          });
+      });
+    }
+
+    
+    // 发布到其他平台
     const transmit = reactive({
       show: false,
       target: '',
       text: '',
       handleClick: (e) => {
         transmit.target = e.key;
-        transmit.text = praseText(myEditor.text);
-        const { text, isSupported, copy } = useClipboard()
+        transmit.text = praseText(vditor.getValue());
 
+        const { text, isSupported, copy } = useClipboard()
         if (isSupported) {
           const permissionRead = usePermission('clipboard-read')
           const permissionWrite = usePermission('clipboard-write')
@@ -230,41 +333,68 @@ export default defineComponent({
       }
     })
 
-    function praseUploadRes(data:any, revision:boolean, compile:boolean) {
+    function upLoadImage(image:File, paste:boolean=false):void {
+      new Promise((resolve, reject) => {
+        request({
+          url: "/api/admin/post-image",
+          method: "post",
+          data: image,
+          params: {
+            filename: image.name.replace(/\W/g, ''),
+            rename_format: '%Y%m%d%H%M%S'
+          },
+          headers: {
+            "Content-Type": "multipart/form-data",
+          }
+        })
+        .then(res => {
+          const url = "![图片](" + res.data.data + ")";
+          // console.log(res);
+          if (vditor.io && !paste) {
+            vditor.io.insertValue(url);
+          }
+          if (paste) {
+            data.url = url;
+          }
+          status.step = 0;
+          resolve(url)
+        })
+        .catch(err => {
+          status.step = 0;
+          reject(err)
+        })
+      });
+    }
+
+    function praseUploadRes(data:any, revision:boolean, compile:boolean, autosave:boolean=false) {
       if (data.code && data.code == "403") {
-        message.error(data.message)
-        btnStatus.value = "发布";
-        myEditor.processing = 0;
+        message.error(data.message);
+        status.step = 0;
       } else {
         if (revision && route.params.path == 'draft' && data.data) {
           router.push('/edit/' + data.data)
           message.success(data.message);
-        } else {
+        } else if (!autosave){
           message.success("文章已自动保存~")
         }
 
         if (compile) {
-          btnStatus.value = "编译中";
           compile_md();
         } else {
-          myEditor.processing = 0;
+          status.step = 0;
         }
       }
     }
 
     // 上传
-    function upload(revision:boolean, compile: boolean, need: boolean=false) {
-      if (compile) {
-        btnStatus.value = "上传中";
-        myEditor.loading = true;
-      }
+    function upload(revision:boolean, compile: boolean, need: boolean=false, autosave:boolean=false) {
 
       // 保存源文件
       new Promise((resolve, reject) => {
         request({
           url: "/api/admin/articles/md_source",
           method: "post",
-          data: myEditor.text,
+          data: vditor.getValue(),
           headers: {
             "Content-Type": "text/plain",
           },
@@ -275,274 +405,197 @@ export default defineComponent({
           },
         })
           .then((res) => {
-            praseUploadRes(res.data, revision, compile);
-            myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
-            myEditor.hash = customHash(myEditor.text)
-            status.offline = false;
-            status.unLoad = false;
+            praseUploadRes(res.data, revision, compile, autosave);
+            vditor.updateTime = parseTime(new Date(), '{h}:{i}:{s}')
+            status.hash = customHash(vditor.getValue());
+            status.draft = false;
             resolve(res);
           })
           .catch((err) => {
             message.error("there is something wrong")
-            myEditor.processing = 0;
-            status.offline = true;
+            status.step = 0;
             reject(err);
           });
       });
     }
 
     function compile_md() {
+      vditor.io?.disabled();
       new Promise((resolve, reject) => {
         request({
           url: "/api/admin/deploy-vuepress",
           method: "get",
         })
           .then((res) => {
-            message.success(res.data.message);
-            btnStatus.value = "发布";
-            myEditor.processing = 0;
-            myEditor.loading = false;
-            status.offline = false;
+            notification.success({
+              message: res.data.message, duration: 0,
+            });
+            status.step = 0;
+            vditor.io && vditor.io.enable();
             resolve(res);
           })
           .catch((err) => {
-            message.error("there is something wrong")
-            myEditor.processing = 0;
-            myEditor.loading = false;
+            notification.error({
+              message: "there is something wrong", duration: 0,
+            });
+            status.step = 0;
+            vditor.io && vditor.io.enable();
             reject(err);
           });
       });
     }
 
-    // 加载数据
-    function loadData(): void {
-      myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
-      const key: string = "load_data";
-      message.loading({ content: "正在向服务器获取数据……", key });
+
+    function save_draft(autosave:boolean=false) {
+      if (status.step != 0) {
+        return
+      }
+      if (status.step != 6 && online) {
+        vditor.updateTime = parseTime(new Date(), '{h}:{i}:{s}')
+      }
+      if ((status.draft || vditor.io && customHash(vditor.io.getValue()) != status.hash) && online) {
+        status.step = 1
+        upload(false, false, false, autosave);
+      }
+    }
+
+    function test_connection() {
       new Promise((resolve, reject) => {
         request({
-          url: "/api/admin/articles/md_source",
+          url: "/api/admin/test-connect",
           method: "get",
-          params: {
-            path: route.params.path,
-          },
         })
-          .then((res) => {
-            myEditor.loading = false;
-            if (res.data.data) {
-              myEditor.text = res.data.data;
-              message.success({ content: "加载成功~", key });
-            } else {
-              message.success({ content: "从本地新建~", key })
-            }
-            
-            myEditor.hash = customHash(myEditor.text)
-            status.offline = false;
-            resolve(res);
-          })
-          .catch((err) => {
-            myEditor.loading = false;
-            message.error({ content: "所访问的资源不存在", key });
-            router.push("/edit/draft");
-            reject(err);
-          });
-      });
-    }
-
-    // 解析文本
-    function praseText(result:string):string {
-
-      const coverPatt = /cover:[ ]*.*/;
-      const permalinkPatt = /permalink:[ ]*.*/;
-      const titlePatt = /title:[ ]*.*/;
-
-      let temp:any;
-      var cover: string = "";
-      var permalink: string = "";
-      var title: string = "";
-
-      function replace_pun(sta_a: string): string {
-        return sta_a.replace(" ", "")
-                    .replace("'", "")
-                    .replace('"', '')
-      }
-
-      // 提取封面
-      temp = coverPatt.exec(result);
-      if (temp) {
-        cover = replace_pun(String(temp)).slice(6);
-      } else {
-        cover = "";
-      }
-      // 提取链接
-      temp = permalinkPatt.exec(result);
-      if (temp) {
-        permalink = replace_pun(String(temp)).slice(10);
-      } else {
-        console.log("There is something WRONG!");
-      }
-      // 提取标题
-      temp = titlePatt.exec(result);
-      if (temp) {
-        title = replace_pun(String(temp)).slice(6);
-      } else {
-        console.log("There is something WRONG!");
-      }
-
-      result = result.replace(/---[\s\S]*---/, "");
-
-      result =
-        `本文首发于个人博客：[https://xerrors.fun${permalink}](https://xerrors.fun${permalink})\n\n` +
-        `欢迎访问更多文章：[https://xerrors.fun](https://xerrors.fun)\n\n---\n\n` +
-        `# ${title}\n\n` +
-        result;
-
-      if (cover) {
-        result = "![封面](" + cover + ")\n\n" + result;
-      }
-      return result;
-    }
-
-    function save_draft() {
-      if (!Boolean(status.offline)) {
-        myEditor.update_time = parseTime(new Date(), '{h}:{i}:{s}')
-      }
-      if (status.unLoad) {
-        myEditor.processing = 1
-        upload(false, false)
-      }
-      else {
-        new Promise((resolve, reject) => {
-          request({
-            url: "/api/admin/test-connect",
-            method: "get",
-          })
-          .then((res) => {
-            status.offline = false;
-            resolve(res);
-          })
-          .catch((err) => {
-            status.offline = true;
-            reject(err)
-          })
+        .then((res) => {
+          if (status.step == 6) {
+            status.step = 0;
+          }
+          resolve(res);
         })
-      }
+        .catch((err) => {
+          status.step = 6;
+          reject(err)
+        })
+      })
     }
 
     function revision() {
-      myEditor.processing = 2
+      status.step = 2
       upload(true, false)
     }
 
     function save_and_compile() {
-      myEditor.processing = 3
+      status.step = 3
       upload(true, true)
     }
 
-    // 此哈希函数来源于提问的解答：
-    // https://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript
-    function customHash (str:string) {
-      var hash = 0, i, chr;
-      for (i = 0; i < str.length; i++) {
-        chr   = str.charCodeAt(i);
-        hash  = ((hash << 5) - hash) + chr;
-        hash |= 0; // Convert to 32bit integer
-      }
-      return hash;
-    }
+    onMounted(() => {
+      initVditor(route.params.path);
+
+      var pasteImage = new PasteImage(document.getElementById('pasteInput'));
+
+      pasteImage.on('paste-image-file', function (image:File) {
+        upLoadImage(image, true)
+      });
+    })
+
 
     onBeforeUnmount(() => {
-      clearInterval(localTimer);
+      clearInt();
     })
-    
-    onMounted(() => {
-      // 向服务器获取数据
-      console.log(route.params.path);
-      loadData();
-      localTimer = setInterval(save_draft, 8000);
-    });
+
+    const selectText = (e:Event) => {
+      e.currentTarget.select();
+    }
+
+    const clearInt = () => {
+      clearInterval(localTimer1);
+      clearInterval(localTimer2);
+    }
 
     return {
-      myEditor,
+      data,
+      vditor,
+      routerJump,
       status,
-      toolbar,
-      btnStatus,
+      online,
       transmit,
       save_draft,
       revision,
       save_and_compile,
+      routerBack,
+      saveAsMark,
+      selectText,
+      activeToolbarItem,
+      toggleToolbar,
+      initVditor,
+      clearInt,
+      store,
+      router,
     };
   },
-  methods: {
-    handleUploadImage(event: any, insertImage: any, files: any) {
-      // 拿到 files 之后上传到文件服务器，然后向编辑框中插入对应的内容
-      // console.log(files);
-      this.myEditor.loading = true;
-
-      new Promise((resolve, reject) => {
-        request({
-          url: "/api/admin/post-image",
-          method: "post",
-          data: files[0],
-          params: {
-            filename: files[0].name,
-            rename_format: '%Y%m%d%H%M%S'
-          },
-          headers: {
-            "Content-Type": "multipart/form-data",
-          }
-        })
-        .then(res => {
-          console.log(res)
-          insertImage({
-            url: res.data.data,
-            desc: '图片',
-          });
-          
-          this.myEditor.loading = false;
-          resolve(res)
-        })
-        .catch(err => {
-          this.myEditor.loading = false;
-          reject(err)
-        })
-      })
-    },
-
-    handleSave(text: string, html: string) {
-      this.save_draft();
-    },
-
-    onOpenNewPage(link: string): void {
-      window.open(link);
-    },
-
-    selectText:function(event){
-      event.currentTarget.select();
+  beforeRouteUpdate(to,from,next){
+    this.clearInt();
+    if (this.store.state.marks.length == 0) {
+      next("/pages")
+    }
+    else {
+      this.initVditor(to.params.path);
+      next()
     }
   },
+  beforeRouteLeave (to, from, next) {
+    this.clearInt();
+    this.save_draft(true);
+    next();
+  }
 });
 </script>
 
 <style lang="scss" scoped>
-.nav-actions {
+.edit .nav-actions-left {
+  & > * {
+    margin-right: 10px;
+  }
+}
+
+
+.edit {
+  .url-input {
+    border: 2px solid white;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.6);
+    height: 40px;
+  }
+
+  .nav-btn {
+    padding: 6px 12px;
+
+    &:not(.ant-btn-primary) {
+      color: var(--heading-color);
+      background: rgba(255, 255, 255, 0.6);
+    }
+
+    &:not(.ant-btn-primary):hover{
+      background: rgba(255, 255, 255, 0.8);
+      box-shadow: 2px 2px 14px 2px rgba(0, 0, 0, 0.05);
+    }
+  }
+}
+
+.edit {
+  --navbar-height: 60px;
+}
+
+.nav-actions-right {
   margin-right: 0;
   margin-left: auto;
   & > * {
     margin-left: 10px;
   }
 
-  .ant-btn {
-    background: #e9fafe;
-    padding: 4px 16px;
+  .ant-btn.ant-btn-primary {
+    padding: 6px 12px;
     height: auto;
-  }
-
-  .ant-btn, .ant-btn-group {
-    overflow: hidden;
-    border-radius: 8px;
-
-    border: 2px solid white;
   }
 
   .span-offline {
@@ -555,34 +608,116 @@ export default defineComponent({
   }
 }
 
-.drawer {
-  &__textarea {
-    max-height: 100px;
-  }
-}
-</style>
-
-<style lang="scss">
-.v-md-editor {
-  box-shadow: none;
-  // min-height: calc(100vh - var(--navbar-height) - var(--footer-height));
-  height: calc(100vh - var(--navbar-height) - var(--footer-height));
-
+.vditor {
   border-radius: 16px;
   border: 2px solid white;
   box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
   overflow: hidden;
+  height: calc(100vh - var(--navbar-height) - var(--footer-height));
+}
+</style>
 
-  textarea {
-    font-size: 11pt;
+
+<style lang="scss">
+@import url(vditor/dist/index.css);
+.vditor-toolbar {
+  padding: 4px 5px;
+}
+
+
+.edit {
+  .vditor-toolbar.hidden {
+    display: none;
+  }
+}
+
+// 样式重新优化
+.vditor {
+  --toolbar-background-color: rgba(255,255,255,0.5);
+  --ir-bracket-color: #222;
+  --border-color: #d7e0ec;
+
+  &--fullscreen {
+    --toolbar-background-color: rgb(255,255,255);
+  }
+
+  .vditor-ir {
+    --textarea-background-color: white;
+  }
+  .vditor-reset {
+    &::-webkit-scrollbar {
+      height: 6px !important;
+      width: 6px !important;
+      cursor: pointer;
+      padding: 3px 0;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+    &::-webkit-scrollbar-button:vertical:end:increment{
+      display: block;
+      height: 20px;
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-button:vertical:start:increment{
+      display: block;
+      height: 20px;
+      background-color: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #eaebec;
+      border-radius: 2px;
+    }
+  }
+
+  h1, h2, h3, h4, h5, h6, p {
+    color: #24292e;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+  }
+
+
+  p {
+    font-size: 12pt;
     line-height: 1.7;
+    // letter-spacing: 1px;
   }
 
-  &__toolbar {
-    position: sticky;
-    top: 0;
-    z-index: 90;
-    background: white;
+  .vditor-reset code:not(.hljs).language-yaml:not(.highlight-chroma) {
+    padding: 16px;
+    background: #f7f7f7;
   }
+
+  .vditor-reset pre>code {
+    padding: 1em;
+  }
+
+  .hljs {
+    background: #f6f8fa;
+    
+    &::-webkit-scrollbar {
+      height: 6px !important;
+      width: 6px !important;
+      cursor: pointer;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+    &::-webkit-scrollbar-thumb {
+      background: #eaebec;
+      border-radius: 2px;
+    }
+  }
+}
+
+.vditor-toolbar__item .vditor-tooltipped {
+  width: 28px;
+}
+
+.vditor-ir pre.vditor-reset[contenteditable="false"] {
+  opacity: 1;
+  user-select: none;
+  cursor: not-allowed;
+  pointer-events:none;
+  filter: blur(4px);
 }
 </style>
