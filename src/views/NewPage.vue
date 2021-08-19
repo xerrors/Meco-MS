@@ -151,7 +151,8 @@ export default defineComponent({
     };
 
     let routerBack = () => {
-      store.commit("delBookmark", route.params.path)
+      // 修改返回逻辑，返回之后将不会删除书签，只能手动关闭
+      // store.commit("delBookmark", route.params.path)
       router.go(-1);
     }
 
@@ -609,9 +610,9 @@ export default defineComponent({
 }
 
 .vditor {
-  border-radius: 16px;
+  border-radius: 8px;
   border: 2px solid white;
-  box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
+  box-shadow: 0 2px 12px 0 rgb(0 0 0 / 5%);
   overflow: hidden;
   height: calc(100vh - var(--navbar-height) - var(--footer-height));
 }
@@ -643,8 +644,22 @@ export default defineComponent({
 
   .vditor-ir {
     --textarea-background-color: white;
+
+    &__link {
+      margin-left: 1px;
+      margin-right: 1px;
+      text-decoration: none;
+      border-bottom: 1px dashed;
+
+      &:hover {
+        border-bottom: 1px solid var(--ir-bracket-color);
+      }
+    }
   }
   .vditor-reset {
+    color: #2d3339;
+    font-size: 12pt;
+    line-height: 1.7;
     &::-webkit-scrollbar {
       height: 6px !important;
       width: 6px !important;
@@ -668,18 +683,20 @@ export default defineComponent({
       background: #eaebec;
       border-radius: 2px;
     }
+
+    h1, h2, h3, h4, h5, h6, p, blockquote {
+      color: #2d3339;
+      font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
+    }
+
+    strong {
+      margin-right: 1px;
+      margin-left: 1px;
+    }
   }
 
-  h1, h2, h3, h4, h5, h6, p {
-    color: #24292e;
-    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;
-  }
-
-
-  p {
-    font-size: 12pt;
-    line-height: 1.7;
-    // letter-spacing: 1px;
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 32px;
   }
 
   .vditor-reset code:not(.hljs).language-yaml:not(.highlight-chroma) {
