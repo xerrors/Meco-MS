@@ -8,7 +8,8 @@ export interface Bookmark {
 export default createStore({
   state () {
     return {
-      marks: [] as Bookmark[]
+      marks: [] as Bookmark[],
+      show_slides: true,
     }
   },
   mutations: {
@@ -22,8 +23,10 @@ export default createStore({
       const index = state.marks.findIndex((item:Bookmark) => {return item.path == path})
       if (index != -1) {
         state.marks.splice(index, 1)
-      }
-      
+      } 
+    },
+    toggleSlides (state) {
+      state.show_slides = !state.show_slides;
     }
   }
 })

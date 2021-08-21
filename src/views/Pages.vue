@@ -1,9 +1,13 @@
 <template>
   <div>
-    <div class="navbar">
-      <h1>文章管理</h1>
-      <a-button  type="primary" class="nav-btn" @click="routerJump('/edit/draft')">新建文章</a-button>
-    </div>
+    <Navbar>
+      <a-button
+        type="primary"
+        class="nav-btn"
+        @click="routerJump('/edit/draft')"
+        ><EditOutlined /> 写文章
+      </a-button>
+    </Navbar>
     <a-list
       class="demo-loadmore-list pages"
       :loading="data.loading"
@@ -87,9 +91,10 @@
 import { defineComponent, ref, reactive, computed } from "vue";
 import { useRouter } from "vue-router";
 import { message } from "ant-design-vue";
-import { EyeOutlined, MessageOutlined, LikeOutlined } from '@ant-design/icons-vue';
+import { EyeOutlined, MessageOutlined, LikeOutlined, EditOutlined } from '@ant-design/icons-vue';
 import { parseTime, joinPath } from "../utils/format";
 import request from "../utils/request";
+import Navbar from '../components/Navbar.vue';
 
 export default defineComponent({
   name: "Pages",
@@ -97,6 +102,8 @@ export default defineComponent({
     EyeOutlined,
     MessageOutlined,
     LikeOutlined,
+    EditOutlined,
+    Navbar,
   },
   setup() {
     let router = useRouter();
@@ -286,8 +293,8 @@ export default defineComponent({
 }
 // 未生效
 .ant-popover-inner {
-  backdrop-filter: blur(16px);
-  background: rgba(255, 255, 255, 0.5);
+  // backdrop-filter: blur(16px);
+  // background: rgba(255, 255, 255, 0.5);
   border: 1px solid white;
   border-radius: 8px;
   box-shadow: 1px 1px 12px 2px rgba(0, 0, 0, 0.05);
@@ -303,11 +310,11 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .pages {
-  padding: 8px 0px;
-  background: rgba(255, 255, 255, 0.8);
-  border-radius: 16px;
+  padding: 8px 8px;
+  background: white;
+  border-radius: 8px;
   min-height: 300px;
-  border: 2px solid white;
-  box-shadow: 0px 0px 10px 4px rgb(44 123 255 / 5%);
+  // border: 2px solid white;
+  box-shadow: 0px 0px 10px 4px rgb(130 130 130 / 5%);
 }
 </style>

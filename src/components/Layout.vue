@@ -5,12 +5,12 @@
     </div>
 
     <div v-else class="default-container">
-      <slides></slides>
+      <slides v-if="slides_state"></slides>
 
       <main>
         <!-- <navbar></navbar> -->
         <router-view></router-view>
-        <!-- <footer>Designed & Developed by Xerrors</footer> -->
+        <!-- <footer>Designed & Developed by Xerrors {{ slides_state ? "open" : "close" }}</footer> -->
       </main>
 
     </div>
@@ -18,10 +18,11 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, toRaw } from 'vue'
+import { computed, defineComponent, toRaw } from 'vue'
 import { useRoute } from 'vue-router'
 import Slides from './Slides.vue'
 import Navbar from './Navbar.vue'
+import { useStore } from 'vuex';
 
 export default defineComponent({
   name: 'Layout',
@@ -31,10 +32,12 @@ export default defineComponent({
   },
   setup() {
     let route = useRoute();
+    let store = useStore();
     let route_meta = toRaw(route).meta;
 
     return {
       route_meta,
+      slides_state: computed(() => store.state.show_slides),
     }
   },
 })
@@ -42,15 +45,16 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .default-container {
-  min-width: 1200px;
+  min-width: 760;
+  display: flex;
+  
   // background: linear-gradient(124.51deg, #EBF8FF 11.89%, #e5f1ff 86.3%);
   main{
     display: flex;
     flex-direction: column;
 
-    margin-left: var(--slides-width);
     min-height: 100vh;
-    width: auto;
+    width: 100%;
 
     padding: 0 24px;
 

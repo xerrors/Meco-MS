@@ -108,6 +108,7 @@ export default defineComponent({
     margin-bottom: 0;
   }
 
+  height: 100%;
   max-height: 100%;
 
 
@@ -117,18 +118,17 @@ export default defineComponent({
     display: grid;
     justify-content: space-between;
     grid-template-columns: 1fr 1fr;
-    grid-auto-rows: 50px;
+    grid-auto-rows: 55px;
     grid-gap: 8px 12px;
 
     overflow: scroll;
-    height: 244px;
+    height: calc(100% - 30px);
 
     &::-webkit-scrollbar { width: 0 !important }
     overflow: -moz-scrollbars-none;
 
     .ql-card {
       width: 100%;
-      height: 50px;
       position: relative;
       overflow: hidden;
       z-index: 0;

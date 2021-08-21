@@ -1,26 +1,23 @@
 <template>
   <div class="messages">
-    <div class="navbar">
-      <h1>消息中心</h1>
-      <div class="buttons">
-        <a-button
-          type="primary"
-          class="nav-btn"
-          :loading="data.loading"
-          @click="data.markAsReaded('all')"
-        >
-          全部已读
-        </a-button>
-        
-        <a-button
-          type="primary"
-          class="nav-btn"
-          @click="data.getMsgs"
-        >
-          <template #icon><SyncOutlined :spin="data.loading" /></template>
-        </a-button>
-      </div>
-    </div>
+    <Navbar>
+      <a-button
+        type="primary"
+        class="nav-btn"
+        :loading="data.loading"
+        @click="data.markAsReaded('all')"
+      >
+        全部已读
+      </a-button>
+      
+      <a-button
+        type="primary"
+        class="nav-btn"
+        @click="data.getMsgs"
+      >
+        <template #icon><SyncOutlined :spin="data.loading" /></template>
+      </a-button>
+    </Navbar>
     <div class="message-container">
       <!-- <div class="button-list">
         <div class="platforms">
@@ -93,6 +90,7 @@
 <script lang="ts">
 import { computed, defineComponent, reactive, ref } from "vue";
 import request from "../utils/request";
+import Navbar from '../components/Navbar.vue';
 import { message } from "ant-design-vue";
 import { parseTime } from "../utils/format";
 import { CompassOutlined, SyncOutlined } from "@ant-design/icons-vue";
@@ -101,6 +99,7 @@ export default defineComponent({
   components: {
     CompassOutlined,
     SyncOutlined,
+    Navbar,
   },
   setup() {
     const btn_text = ref(["总览", "本站", "微信", "知乎", "掘金"]);
@@ -179,61 +178,6 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .message-container {
-  .button-list,
-  .msg-lists {
-    width: 100%;
-  }
-
-  .button-list {
-    display: flex;
-
-    .platforms {
-      display: flex;
-      height: 44px;
-      padding: 2px;
-
-      border: 1px solid #ffffff;
-      box-sizing: border-box;
-      // backdrop-filter: blur(32px);
-      /* Note: backdrop-filter has minimal browser support */
-
-      border-radius: 8px;
-
-      & > div {
-        width: 100px;
-        border-radius: 8px;
-
-        text-align: center;
-        line-height: 40px;
-        cursor: pointer;
-      }
-
-      .isSelected {
-        background: white;
-      }
-    }
-
-    .messages-btns {
-      margin-left: auto;
-      display: flex;
-
-      button {
-        height: 38px;
-        padding: 0 12px;
-        width: auto;
-        border: none;
-        border-radius: 8px;
-        border: 1px solid #f4f4f4;
-
-        margin-left: 15px;
-
-        &:hover {
-          box-shadow: 0 0 5 0 rgba(0, 0, 0, 0.05);
-        }
-      }
-    }
-  }
-
   .msg-lists {
     .msg {
       margin-top: 12px;
@@ -277,16 +221,6 @@ export default defineComponent({
     .readed_msg {
       filter: opacity(0.6);
       box-shadow: none;
-    }
-  }
-}
-
-.navbar {
-  .buttons {
-    margin-left: auto;
-    .nav-btn {
-      margin-left: 16px;
-      
     }
   }
 }

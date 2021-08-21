@@ -1,16 +1,18 @@
 <template>
   <div class="home">
-    <div class="navbar">
-      <h1>后台总览</h1>
-      <a-button
-        type="primary"
-        class="nav-btn"
-        @click="routerJump('/edit/draft')"
-      >
-        开始写作
-      </a-button>
-    </div>
-    <div class="main-container color-block">
+    <Navbar>
+      <template v-slot:default>
+        <a-button
+          type="primary"
+          class="nav-btn"
+          @click="routerJump('/edit/draft')"
+        >
+          <EditOutlined /> 写文章
+        </a-button>
+      </template>
+    </Navbar>
+
+    <div class="main-container">
       <div class="block spc8 spr2 data-charts">
         <h3>数据表现</h3>
         <v-chart class="chart" :option="options.count" autoresize/>
@@ -20,9 +22,9 @@
         <div class="yiju__content hide-scrollbar">{{ yiju.content }}</div>
         <span class="yiju__origin">来自：{{ yiju.origin }}</span>
       </div>
-      <div class="block spc4 spr3 poster-card">
+      <!-- <div class="block spc4 spr3 poster-card">
         <Poster ></Poster>
-      </div>
+      </div> -->
 
       <div class="block spc4 spr3 pv-order">
         <h3>阅读量文章排行</h3>
@@ -85,6 +87,7 @@ import { joinPath, parseTime } from "../utils/format";
 
 import Poster from '../components/Poster.vue';
 import QuickLink from '../components/QuickLink.vue';
+import Navbar from '../components/Navbar.vue';
 
 import request from "../utils/request";
 
@@ -100,6 +103,11 @@ import {
   DatasetComponent,
 } from "echarts/components";
 import VChart, {THEME_KEY} from "vue-echarts";
+
+
+import {
+  EditOutlined,
+} from '@ant-design/icons-vue';
 
 use([
   CanvasRenderer,
@@ -119,6 +127,8 @@ export default defineComponent({
     Poster,
     QuickLink,
     VChart,
+    Navbar,
+    EditOutlined,
   },
   provide: {
     // [THEME_KEY]: "dark"
@@ -300,6 +310,8 @@ export default defineComponent({
           resolve(res);
         })
         .catch(err => {
+          yiju.content = "世界上只有一种真正的英雄主义，就是认清了生活的真相后还依然热爱它！";
+          yiju.origin = "《米开朗琪罗》罗曼·罗兰";
           reject(err)
         })
       })
@@ -338,12 +350,13 @@ export default defineComponent({
 .main-container > .block {
   box-sizing: border-box;
   // backdrop-filter: blur(32px);
-  box-shadow: 1px 1px 14px 4px rgb(44 123 255 / 5%);
+  // box-shadow: 1px 1px 14px 4px rgb(44 123 255 / 5%);
   /* Note: backdrop-filter has minimal browser support */
-  backdrop-filter: blur(64px);
+  // backdrop-filter: blur(64px);
 
-  border-radius: 16px;
+  border-radius: 8px;
   padding: 0.75rem 1rem;
+  box-shadow: 1px 1px 14px 4px rgb(166 166 166 / 5%);
 
   max-width: 100%;
 
@@ -355,16 +368,16 @@ export default defineComponent({
 }
 
 .main-container:not(.color-block) > .block {
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid #ffffff;
+  background: white;
+  // border: 2px solid #ffffff;
 }
 
 /* Grid Layout */
 .main-container {
   display: grid;
 
-  grid-auto-rows: 140px;
-  grid-gap: 20px 24px;
+  grid-auto-rows: 150px;
+  grid-gap: 16px 20px;
 
   .spc8 { grid-column: span 8; }
   .spc7 { grid-column: span 7; }

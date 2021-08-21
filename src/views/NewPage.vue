@@ -50,7 +50,7 @@
         </a-button>
         <a-button
           class="nav-btn"
-          @click="activeToolbarItem('fullscreen')"
+          @click="hideSlides"
         >
           <template #icon><ExpandOutlined /></template>
         </a-button>
@@ -163,6 +163,10 @@ export default defineComponent({
       })
       // console.log(store.state.marks);
       router.go(-1);
+    }
+
+    let hideSlides = () => {
+      store.commit("toggleSlides");
     }
 
     let activeToolbarItem = (item:string, i:number|null):void => {
@@ -532,6 +536,7 @@ export default defineComponent({
       clearInt,
       store,
       router,
+      hideSlides,
     };
   },
   beforeRouteUpdate(to,from,next){
@@ -610,9 +615,10 @@ export default defineComponent({
 }
 
 .vditor {
-  border-radius: 8px;
+  border-radius: 4px;
   border: 2px solid white;
-  box-shadow: 0 2px 12px 0 rgb(0 0 0 / 5%);
+  // box-shadow: 0 2px 12px 0 rgb(0 0 0 / 5%);
+  box-shadow: 1px 1px 14px 4px rgb(166 166 166 / 5%);
   overflow: hidden;
   height: calc(100vh - var(--navbar-height) - var(--footer-height));
 }

@@ -1,28 +1,23 @@
 <template>
   <div class="server-log">
-    <div class="navbar">
-      <h1>访问日志</h1>
-      <div class="buttons">
-        <a-button
-          type="primary"
-          class="nav-btn"
-          :loading="status.loading"
-          @click="pv_logs.get_page_view_all"
-        >
-          加载更多
-        </a-button>
-        
-        <a-button
-          type="primary"
-          class="nav-btn"
-          @click="pv_logs.get_page_view_all(true)"
-        >
-          <template #icon><SyncOutlined :spin="status.loading" /></template>
-        </a-button>
-      </div>
+    <Navbar>
+      <a-button
+        type="primary"
+        class="nav-btn"
+        :loading="status.loading"
+        @click="pv_logs.get_page_view_all"
+      >
+        加载更多
+      </a-button>
       
-
-    </div>
+      <a-button
+        type="primary"
+        class="nav-btn"
+        @click="pv_logs.get_page_view_all(true)"
+      >
+        <template #icon><SyncOutlined :spin="status.loading" /></template>
+      </a-button>
+    </Navbar>
     <div class="log-content">
       <a-table
         :columns="pv_logs.col" 
@@ -47,11 +42,13 @@ import { parseTime } from "../utils/format";
 import { rejects } from "node:assert";
 
 import { CompassOutlined, SyncOutlined } from "@ant-design/icons-vue";
+import Navbar from '../components/Navbar.vue';
 
 export default defineComponent({
   name: "serverlog",
   components: {
-    SyncOutlined
+    SyncOutlined,
+    Navbar,
   },
   setup() {
     const pv_logs = reactive({
@@ -137,23 +134,14 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 .log-content {
-  border-radius: 16px;
+  border-radius: 4px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid white;
-  box-shadow: 0px 0px 10px 4px rgb(44 123 255 / 5%);
+  background: white;
+  // background: rgba(255, 255, 255, 0.8);
+  // border: 2px solid white;
+  box-shadow: 0px 0px 10px 2px rgb(130 130 130 / 5%);
   padding: 8px 16px;
   margin-bottom: 16px;
-}
-
-.navbar {
-  .buttons {
-    margin-left: auto;
-    .nav-btn {
-      margin-left: 16px;
-      
-    }
-  }
 }
 
 </style>

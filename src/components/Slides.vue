@@ -1,31 +1,34 @@
 <template>
   <div class="slides round">
     <div class="logo">
-      <!-- MECO -->
-      <img src="https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/test.png" alt="Meco" style="object-fit: contain;">
+      <div>Meco<span style="color: var(--primary-color)">.</span>ms</div>
+      <!-- <img src="https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/test.png" alt="Meco" style="object-fit: contain;"> -->
     </div>
 
     <div class="button-panel">
-      <router-link to="/dashboard"><DashboardOutlined />后台总览</router-link>
-      <router-link to="/pages"><FileTextOutlined />文章管理</router-link>
-      <router-link to="/messages"><CommentOutlined />消息管理</router-link>
-      <router-link to="/server-log"><DatabaseOutlined />访问日志</router-link>
-      <router-link to="/search"><SearchOutlined />全局搜索</router-link>
-      <router-link to="/test-page"><ExperimentOutlined />测试页面</router-link>
+      <router-link class="slides-btn" to="/dashboard"><DashboardOutlined />控制台</router-link>
+      <router-link class="slides-btn" to="/pages"><FileTextOutlined />文章</router-link>
+      <router-link class="slides-btn" to="/messages"><CommentOutlined />消息</router-link>
+      <router-link class="slides-btn" to="/server-log"><DatabaseOutlined />访问记录</router-link>
+      <router-link class="slides-btn" to="/search"><SearchOutlined />搜索</router-link>
+      <router-link class="slides-btn" to="/test-page"><ExperimentOutlined />Lab</router-link>
     </div>
 
     <div class="bookmarks">
-      <div class="bookmark"
+      <div v-if="marks.length != 0" style="font-weight: bold; margin-bottom: 24px;">
+        已暂存的书签：
+      </div>
+      <p class="bookmark"
         v-for="(mark, ind) in marks"
         :key="ind" 
         @click.right="removeBookmark($event, mark.path)"
       >
-        <router-link :to="'/edit/'+mark.path">{{ mark.title }}</router-link>
-      </div>
+        <router-link :to="'/edit/'+mark.path"><FileTextOutlined /> {{ mark.title }}</router-link>
+      </p>
     </div>
 
     <div class="logout">
-      <button @click="logoutObj.showModal"><ImportOutlined />退出登录</button>
+      <button class="slides-btn" @click="logoutObj.showModal"><ImportOutlined />退出登录</button>
       <a-modal
         title="提示"
         :visible="logoutObj.visible"
@@ -73,6 +76,8 @@ export default defineComponent({
     let store = useStore();
     let marks = store.state.marks;
 
+    // let slides_state = store.state.show_slides;
+
     let logoutObj = reactive({
       visible: false,
       confirmLoading: false,
@@ -115,6 +120,7 @@ export default defineComponent({
       logoutObj,
       marks,
       removeBookmark,
+      // slides_state,
     }
   }
 });
@@ -128,19 +134,20 @@ export default defineComponent({
   // height: calc(100vh - var(--slide-margin-width) * 2);
   // width: calc(var(--slides-width) - var(--slide-margin-width));
 
-  background: rgba(255, 255, 255, 0.8);
-  border: 2px solid #FFFFFF;
-  border-radius: 0 16px 16px 0;
+  // background: rgba(255, 255, 255, 0.8);
+  // border: 2px solid #FFFFFF;
+  // border-radius: 0 16px 16px 0;
   // margin: var(--slide-margin-width);
+  // backdrop-filter: blur(32px);
+  // box-shadow: 0px 0px 10px 4px rgb(44 123 255 / 5%);
+
+  background: white;
   
   box-sizing: border-box;
-  // backdrop-filter: blur(32px);
-
-  box-shadow: 0px 0px 10px 4px rgb(44 123 255 / 5%);
 }
 
 .slides {
-  position: fixed;
+  position: sticky;
   top: 0;
   
   width: var(--slides-width);
@@ -149,24 +156,25 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0 32px;
 
   background: white;
-
-  padding: 8px 0 16px 0;
   
-  .logo, .button-panel {
-    width: 200px;
+  .logo, .button-panel, .logout, .bookmarks {
+    width: calc(var(--slides-width) - 60px);
   }
 
   .logo {
     display: flex;
-    justify-content: center;
+    justify-content: left;
+    align-items: center;
     
     font-size: 28px;
     font-weight: bold;
+    letter-spacing: 1px;
     color: #333;
 
-    height: 60px;
+    height: var(--navbar-height);
   }
 
   .button-panel {
@@ -176,31 +184,10 @@ export default defineComponent({
 
     height: auto;
 
-    margin-top: 16px;
-
-    a {
-      display: flex;
-      align-items: center;
+    .slides-btn {
+      // 只适用于侧边栏上侧按钮
+      width: 100%;
       gap: 8px;
-
-      border-radius: 8px;
-      margin: 10px;
-      padding: 8px 16px;
-
-      color: #333;
-      font-weight: bold;
-      text-decoration: none;
-
-      letter-spacing: 2px;
-
-      font-size: 16px;
-      line-height: 24px;
-
-      transition: background .2s ease-in-out;
-
-      &:hover:not(.router-link-active) {
-        background: #f0f2fa;
-      }
     }
 
     .router-link-active {
@@ -209,19 +196,38 @@ export default defineComponent({
     }
   }
 
+  .slides-btn {
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    padding: 6px 16px;
+
+    color: var(--text-color);
+    text-decoration: none;
+
+    font-size: 15px;
+    line-height: 24px;
+
+    transition: background .2s ease-in-out;
+
+    &:hover:not(.router-link-active) {
+      background: #f0f2f4;
+    }
+
+    > span {
+      margin-right: 10px;
+      font-size: 18px;
+    }
+  }
+
   .logout {
-    margin-top: 40px;
-    margin-bottom: 0;
+    margin-top: 80px;
+    margin-bottom: 40px;
 
     button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      padding: 8px 28px;
+      width: 100%;
       background: none;
-      transition: background .2s ease-in-out;
-      border-radius: 8px;
 
       &:hover {
         background: #f0f2fa;
@@ -239,23 +245,20 @@ export default defineComponent({
   margin-top: auto;
   width: 80%;
   .bookmark {
-    // word-brack: keepall;
+    word-break: keep-all;
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
     position: relative;
 
     background: white;
-    box-shadow: 1px 1px 10px 2px rgba(0,0,0,0.05);
-    margin: 16px 0;
-    padding: 6px 12px;
-    border: 2px solid white;
-    border-radius: 8px;
-    height: 40px;
+    // box-shadow: 1px 1px 10px 2px rgba(0,0,0,0.05);
+    margin-top: 8px;
+    margin-bottom: 0;
+    // padding: 6px 12px;
+    // border-radius: 8px;
 
     & > a {
-      width: 100%;
-      overflow: hidden;
-      display: block;
-      white-space: nowrap;
       color: #333;
     }
   }
