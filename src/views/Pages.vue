@@ -43,7 +43,8 @@
           <span class="list-date">{{ item.date }}</span>
           <a-list-item-meta>
             <template #title>
-              <a :href="item.link" target="_blank">{{ item.title }}</a>
+              <a v-if="data.source=='db'" @click="routerJump('/edit/' + item.permalink)">{{ item.title }}</a>
+              <a v-else :href="item.link" target="_blank">{{ item.title }}</a>
             </template>
             <template #description>
               <EyeOutlined />
@@ -201,7 +202,7 @@ export default defineComponent({
             method: "get",
             params: { source: source },
           }).then((res) => {
-            data.praseArticles(res.data.data);              
+            data.praseArticles(res.data.data, data.source);              
             data.loading = false;
             // message.success("加载完成");
             resolve(res);

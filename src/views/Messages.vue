@@ -139,7 +139,7 @@ export default defineComponent({
             .then((res) => {
               data.msgs = parseMsgs(res.data.data);
               data.loading = false;
-              message.success("刷新完成")
+              // message.success("刷新完成")
               resolve(res);
             })
             .catch((err) => {

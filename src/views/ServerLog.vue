@@ -26,7 +26,7 @@
         >
       
         <template #path="{ text }">
-          <a :href='"https://www.xerrors.fun/" + text + "/"' target="_blank">{{ text }}</a>
+          <router-link :to="'/edit/'+text">{{ text }}</router-link>
         </template>
 
       </a-table>
@@ -96,7 +96,7 @@ export default defineComponent({
           })
             .then((res) => {
               status.loading = false;
-              message.success("加载完成");
+              // message.success("加载完成");
               pv_logs.value = pv_logs.value.concat(parseLogs(res.data.data));
               resolve(res);
             })
