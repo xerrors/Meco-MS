@@ -2,7 +2,28 @@
 
 Meco Manage System
 
-一个用于博客网站的后台管理系统，是从项目 [Gourd](https://github.com/xerrors/gourd) 的后台部分拆分而来。
+一个用于博客网站的后台管理系统，是从项目 [Gourd](https://github.com/xerrors/gourd) 的后台部分拆分而来。此项目依赖后端配置，参考[Meco-Server](https://github.com/xerrors/meco-server)；
+
+控制台有页面：
+
+![](https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210822131624.png)
+
+文章列表：
+
+![](https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210822131850.png)
+
+消息列表：
+
+![](https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210822131915.png)
+
+服务器日志：
+
+![](https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210822131948.png)
+
+文章编辑：
+
+![](https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210822132117.png)
+
 
 ### 安装 node
 
@@ -22,11 +43,3 @@ sudo apt-get install -y nodejs
 npm install --global yarn
 ```
 
-## TODO
-
-- 编辑完文章之后切换到其他页面需要判断是否要保存
-- build 之后无法跨域的问题
-- 发布完成之后可以发布到别的网站的支持
-- 添加保存草稿功能，保存之后不会编译
-- 主页显示内容优化
-- logout 优化，无提示
