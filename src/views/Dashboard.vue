@@ -428,7 +428,7 @@ export default defineComponent({
     > div {
       font-size: 1.6rem;
       font-family: initial;
-      color: #0b76da;
+      color: var(--primary-color);
       line-height: 1;
       font-weight: 600;
       margin-top: 16px;
@@ -441,7 +441,7 @@ export default defineComponent({
       width: fit-content;
       display: block;
       text-align: center;
-      background: #cce5ff;
+      background: var(--block-light-theme-bg);
       border-radius: 4px;
       padding: 0px 6px;
       font-size: 0.75rem;
@@ -464,26 +464,33 @@ export default defineComponent({
 }
 
 .pv-order-list {
-  margin: 0.8rem 0;
-  height: calc(100% - 1.6rem);
+  margin: 0.4rem 0;
+  height: calc(100% - 2rem);
 
   &:first-child() {
     color: red;
   }
 
   .list-item {
-    height: 40px;
+    height: 39px;
     width: 100%;
     display: flex;
     // justify-content: center;
     align-items: center;
 
+    // &:first-child {
+    //   .list-item-label {
+    //     color: red;
+    //   }
+    // }
+
     .list-item-label {
-      width: 20px;
+      width: 18px;
       height: 20px;
+      font-size: 14px;
       border-radius: 50%;
       margin-right: 10px;
-      text-align: center;
+      text-align: left;
       font-weight: 600;
       line-height: 20px;
     }
@@ -501,9 +508,10 @@ export default defineComponent({
 
     .list-item-count {
       margin-left: auto;
-      background: #dbedff;
+      background: var(--block-light-theme-bg);
+      font-weight: bold;
       text-align: right;
-      padding: 0px 8px;
+      padding: 2px 8px;
       border-radius: 4px;
       font-size: smaller;
     }
@@ -530,13 +538,13 @@ export default defineComponent({
   &__date {
     // color: #0b76da;
     line-height: 1.4;
-    border-left: 4px solid #0b76da;
+    border-left: 4px solid var(--primary-color);
     padding-left: 0.6rem;
   }
 
   &__content {
     height: auto;
-    margin: 4px 0;
+    margin: 8px 0;
     overflow: scroll;
     padding: 0;
 

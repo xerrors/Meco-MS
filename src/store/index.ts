@@ -27,6 +27,9 @@ export default createStore({
     },
     toggleSlides (state) {
       state.show_slides = !state.show_slides;
+    },
+    setSlidesState (state, option:boolean) {
+      state.show_slides = option;
     }
   }
 })

@@ -3,6 +3,12 @@
     <div class="navbar">
       <div class="nav-actions-left">
         <a-button
+          class="nav-btn"
+          @click="hideSlides"
+        >
+          <template #icon><MenuOutlined /></template>
+        </a-button>
+        <a-button
           class="nav-btn back"
           @click="routerBack"
         >
@@ -26,23 +32,19 @@
         </div>
         <a-button
           class="nav-btn"
-          @click="activeToolbarItem('outline')"
-        >
-          <template #icon><AlignLeftOutlined /></template>
-        </a-button>
-        <a-button
-          class="nav-btn"
           @click="activeToolbarItem('upload')"
         >
           <template #icon><CloudUploadOutlined /></template>
         </a-button>
         <a-button
+          v-if="data.path == 'draft'"
           class="nav-btn"
           @click="vditor.setValue(data.templates['weekpost'])"
         >
           <template #icon><FileTextOutlined /></template>
         </a-button>
         <a-button
+          v-if="data.path == 'draft'"
           class="nav-btn"
           @click="vditor.setValue(data.templates['default'])"
         >
@@ -50,15 +52,15 @@
         </a-button>
         <a-button
           class="nav-btn"
-          @click="hideSlides"
-        >
-          <template #icon><ExpandOutlined /></template>
-        </a-button>
-        <a-button
-          class="nav-btn"
           @click="toggleToolbar(!data.toolbar)"
         >
           <template #icon><EllipsisOutlined /></template>
+        </a-button>
+        <a-button
+          class="nav-btn"
+          @click="activeToolbarItem('outline')"
+        >
+          <template #icon><AlignRightOutlined /></template>
         </a-button>
       </div>
       <div class="nav-actions-right">
@@ -115,11 +117,11 @@ import {
   LeftOutlined,
   FolderAddOutlined,
   RestOutlined,
-  ExpandOutlined,
+  MenuOutlined,
   FileTextOutlined,
   CloudUploadOutlined,
   ExportOutlined,
-  AlignLeftOutlined,
+  AlignRightOutlined,
   EllipsisOutlined,
 } from '@ant-design/icons-vue';
 import { customHash } from "../utils/func";
@@ -131,11 +133,11 @@ export default defineComponent({
     LeftOutlined,
     FolderAddOutlined,
     RestOutlined,
-    ExpandOutlined,
+    MenuOutlined,
     FileTextOutlined,
     CloudUploadOutlined,
     ExportOutlined,
-    AlignLeftOutlined,
+    AlignRightOutlined,
     EllipsisOutlined,
   },
   setup() {
@@ -204,6 +206,7 @@ export default defineComponent({
       templates: parseTemplates(),
       toolbar: false,
       md: {} as Item,
+      path: route.params.path,
     })
 
     const online = useOnline();
@@ -261,6 +264,10 @@ export default defineComponent({
         cache: {
           enable: false,
         },
+        outline: {
+          enable: false,
+          position: 'right',
+        },
         preview: {
           hljs: {
             lineNumber: true,
@@ -290,12 +297,11 @@ export default defineComponent({
           method: "get",
           params: {
             path: path,
-            // path: "ner-beginner-note",
           },
         })
           .then((res) => {
             if (res.data.data) {
-              vditor.setValue(res.data.data)
+              vditor.setValue(res.data.data + "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n");
               data.md = res.data.md;
             } else {
               vditor.setValue(data.templates["default"])
@@ -494,6 +500,8 @@ export default defineComponent({
     }
 
     onMounted(() => {
+      // 默认关闭侧边栏
+      // store.commit("setSlidesState", false);
       initVditor(route.params.path);
 
       var pasteImage = new PasteImage(document.getElementById('pasteInput'));
@@ -567,19 +575,35 @@ export default defineComponent({
 
 .edit {
   .url-input {
-    border: 2px solid white;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(255, 255, 255, 1);
     height: 40px;
+  }
+
+  .navbar {
+    position: sticky;
+    top: 0;
+    background: #fafafa;
+    z-index: 2;
+  }
+
+  .nav-btn, .url-input {
+    box-shadow: 2px 2px 14px 2px rgba(168, 168, 168, 0.05);
+    border-radius: 4px;
+  }
+
+  .nav-btn:not(.ant-btn-primary), .url-input {
+      color: var(--heading-color);
+      border: 1px solid #f2f2f2;
+
+      &:focus, &:hover {
+        background: white;
+        box-shadow: 2px 2px 14px 2px rgba(0, 0, 0, 0.05);
+      }
   }
 
   .nav-btn {
     padding: 6px 12px;
-
-    &:not(.ant-btn-primary) {
-      color: var(--heading-color);
-      background: rgba(255, 255, 255, 0.6);
-    }
+    // border: 2px solid white;
 
     &:not(.ant-btn-primary):hover{
       background: rgba(255, 255, 255, 0.8);
@@ -616,11 +640,12 @@ export default defineComponent({
 
 .vditor {
   border-radius: 4px;
-  border: 2px solid white;
+  // border: 2px solid white;
+  border: none;
   // box-shadow: 0 2px 12px 0 rgb(0 0 0 / 5%);
   box-shadow: 1px 1px 14px 4px rgb(166 166 166 / 5%);
-  overflow: hidden;
-  height: calc(100vh - var(--navbar-height) - var(--footer-height));
+  // overflow: hidden;
+  // height: calc(100vh - var(--navbar-height) - var(--footer-height));
 }
 </style>
 
@@ -628,7 +653,9 @@ export default defineComponent({
 <style lang="scss">
 @import url(vditor/dist/index.css);
 .vditor-toolbar {
-  padding: 4px 5px;
+  top: var(--navbar-height);
+  padding: 4px 6px;
+  backdrop-filter: blur(8px);
 }
 
 
@@ -640,9 +667,10 @@ export default defineComponent({
 
 // 样式重新优化
 .vditor {
-  --toolbar-background-color: rgba(255,255,255,0.5);
+  --toolbar-background-color: #fafafaba;
   --ir-bracket-color: #222;
-  --border-color: #d7e0ec;
+  --border-color: #f2f3f4;
+  --second-color: rgb(147 164 182 / 20%);
 
   &--fullscreen {
     --toolbar-background-color: rgb(255,255,255);
@@ -662,6 +690,24 @@ export default defineComponent({
       }
     }
   }
+
+  .vditor-content {
+    background: white;
+  }
+  
+
+  div.vditor-outline {
+    position: sticky;
+    top: var(--navbar-height);
+    max-height: calc(100vh - var(--navbar-height));;
+    padding: 14px 0 0 16px;
+    z-index: 2;
+
+    li>span>svg {
+      display: none;
+    }
+  }
+
   .vditor-reset {
     color: #2d3339;
     font-size: 12pt;
@@ -733,7 +779,7 @@ export default defineComponent({
 }
 
 .vditor-toolbar__item .vditor-tooltipped {
-  width: 28px;
+  width: 24px;
 }
 
 .vditor-ir pre.vditor-reset[contenteditable="false"] {
@@ -742,5 +788,9 @@ export default defineComponent({
   cursor: not-allowed;
   pointer-events:none;
   filter: blur(4px);
+}
+
+.vditor-ir .vditor-reset>h1:before, .vditor-ir .vditor-reset>h2:before, .vditor-ir .vditor-reset>h3:before, .vditor-ir .vditor-reset>h4:before, .vditor-ir .vditor-reset>h5:before, .vditor-ir .vditor-reset>h6:before, .vditor-ir div[data-type="link-ref-defs-block"]:before, .vditor-ir div[data-type="footnotes-block"]:before, .vditor-ir .vditor-toc:before {
+  margin-left: -24px;
 }
 </style>

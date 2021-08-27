@@ -27,7 +27,7 @@ export const parseTemplates = () => {
     title: "新建周报",
     date: parseTime(new Date()),
     permalink: "/" + parseTime(new Date(), "{y}-{m}-{d}") + "-week-post/",
-    cover: "https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210430165756-image.png",
+    cover: "https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210820175248-imagepng",
     tags: ["周报"],
     categories: "周报",
     abstract: "摘要"
