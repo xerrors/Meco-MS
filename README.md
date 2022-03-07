@@ -2,9 +2,11 @@
 
 Meco Manage System
 
-一个用于博客网站的后台管理系统，是从项目 [Gourd (废弃的)](https://github.com/xerrors/gourd) 的后台部分拆分而来。此项目依赖后端配置才能正常使用，参考[Meco-Server](https://github.com/xerrors/meco-server)；
+一个用于博客网站的后台管理系统，是从项目 [Gourd (废弃的)](https://github.com/xerrors/gourd) 的后台部分拆分而来。
 
-控制台有页面：
+**此项目依赖后端配置才能正常使用**，参考[Meco-Server](https://github.com/xerrors/meco-server)；
+
+控制台页面：
 
 ![](https://xerrors.oss-cn-shanghai.aliyuncs.com/imgs/20210822131624.png)
 
