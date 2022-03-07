@@ -54,7 +54,7 @@ export default defineComponent({
     flex-direction: column;
 
     min-height: 100vh;
-    width: 100%;
+    width: calc(100% - var(--slides-width));
 
     padding: 0 24px;
 

@@ -351,7 +351,7 @@ export default defineComponent({
           method: "post",
           data: image,
           params: {
-            filename: image.name.replace(/\W/g, ''),
+            filename: image.name,
             rename_format: '%Y%m%d%H%M%S'
           },
           headers: {
