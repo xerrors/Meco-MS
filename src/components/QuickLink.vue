@@ -50,8 +50,8 @@ export default defineComponent({
         },
         {
           title: "开发日志",
-          link: "https://shimo.im/docs/GpV69tpQK9c99JGv",
-          domain: "ShiMo",
+          link: "https://www.notion.so/krance/7bf386be455342489b5867e47a48003b",
+          domain: "Notion",
           color: "hsl(0deg 40% 40%)"
         },
         {
